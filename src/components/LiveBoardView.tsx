@@ -2,9 +2,9 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { useLiveData, useLiveVersion } from "@/hooks/useLive";
+import { useLiveBoard } from "@/hooks/useLive";
 import { formatFormation, minuteLabel, minuteOrder } from "@/lib/fanta/format";
-import type { BoardPlayer, LiveBoard } from "@/lib/api-types";
+import type { BoardPlayer } from "@/lib/api-types";
 import { MatchDetail } from "./MatchDetail";
 import { MatchRail } from "./MatchRail";
 import { PlayerSheet } from "./PlayerSheet";
@@ -131,11 +131,7 @@ function Changes({ players }: { players: BoardPlayer[] }) {
 }
 
 export function LiveBoardView() {
-  const { tick, connected } = useLiveVersion();
-  const { data, error, loading } = useLiveData<LiveBoard>(
-    "/api/live",
-    tick?.version,
-  );
+  const { data, error, loading, connected } = useLiveBoard();
   const [selected, setSelected] = useState<number | null>(null);
   const [player, setPlayer] = useState<BoardPlayer | null>(null);
 

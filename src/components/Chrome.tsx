@@ -4,10 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+const IS_STATIC = process.env.NEXT_PUBLIC_STATIC === "1";
+
 const TABS = [
   { href: "/", label: "Home", glyph: "◎" },
   { href: "/live", label: "Diretta", glyph: "◈" },
-  { href: "/lega-reale", label: "Le mie leghe", glyph: "▤" },
+  ...(IS_STATIC
+    ? []
+    : [{ href: "/lega-reale", label: "Le mie leghe", glyph: "▤" }]),
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -54,7 +58,7 @@ export function Chrome({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line)] bg-ground/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-        <div className="grid grid-cols-3">
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
           {TABS.map((tab) => {
             const active = isActive(pathname, tab.href);
             return (

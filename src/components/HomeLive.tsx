@@ -1,15 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useLiveData, useLiveVersion } from "@/hooks/useLive";
-import type { LiveBoard } from "@/lib/api-types";
+import { useLiveBoard } from "@/hooks/useLive";
 import { MatchRail, ScoreMarquee } from "./MatchRail";
 import { Reveal, Section } from "./ui";
 
 /** The live strip and match rail on the home page. */
 export function HomeLive() {
-  const { tick } = useLiveVersion();
-  const { data } = useLiveData<LiveBoard>("/api/live", tick?.version);
+  const { data } = useLiveBoard();
 
   if (!data) {
     return <div className="h-[168px]" aria-hidden />;

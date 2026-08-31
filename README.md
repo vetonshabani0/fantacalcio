@@ -83,6 +83,27 @@ pnpm check:calendar  # verify round-robin generation
 pnpm build           # production build
 ```
 
+## Deployment
+
+Two builds come out of this repo, and they are deliberately not the same thing.
+
+`pnpm build` produces the full app: API routes, the shared SSE poller, the
+file-backed local leagues and the authenticated real-league pages. It needs a
+Node host (`pnpm start`, or any platform that runs Next.js).
+
+`node scripts/build-static.mjs` produces a static export for GitHub Pages. Pages
+serves files, not servers, so that build drops every server route and keeps only
+the live Serie A board — which works because the live bucket answers with
+`access-control-allow-origin: *`, letting the browser read the same feed and do
+the decoding and scoring itself.
+
+The league features cannot be made static at any price: `apileague.fantacalcio.it`
+returns `access-control-allow-origin: https://leghe.fantacalcio.it` and requires
+credentials, so a browser on another domain is refused before the request is even
+sent. Reading a real league needs a server to proxy the login.
+
+Live static site: <https://vetonshabani0.github.io/fantacalcio/>
+
 ## Design notes
 
 Mobile first, in the literal sense: the phone layout is the one that was
