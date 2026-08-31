@@ -6,3 +6,4 @@ out
 out/**
 .next
 node_modules
+.vercel
