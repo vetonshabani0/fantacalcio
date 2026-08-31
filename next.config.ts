@@ -16,6 +16,17 @@ const config: NextConfig = isStatic
       trailingSlash: true,
       images: { unoptimized: true },
     }
-  : {};
+  : {
+      // A personal deployment that carries a sign-in form has no business in
+      // search results.
+      async headers() {
+        return [
+          {
+            source: "/:path*",
+            headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+          },
+        ];
+      },
+    };
 
 export default config;
