@@ -3,10 +3,17 @@ import path from "node:path";
 import type { League } from "./fanta/league";
 
 /**
- * Leagues live as one JSON file each under .data/leagues. That keeps the app
+ * Leagues live as one JSON file each under .data/leagues, which keeps the app
  * dependency-free while still letting a league be shared by its code.
+ *
+ * Serverless hosting has a read-only project directory, so there we fall back
+ * to the writable temp directory. That storage is per-instance and does not
+ * survive, which is fine: this local league builder is a convenience, while the
+ * real leagues are read from the official API and never stored here at all.
  */
-const ROOT = path.join(process.cwd(), ".data", "leagues");
+const ROOT = process.env.VERCEL
+  ? path.join("/tmp", "fantalive", "leagues")
+  : path.join(process.cwd(), ".data", "leagues");
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
