@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createSession, SESSION_COOKIE } from "@/lib/auth-session";
+import { writeSession } from "@/lib/auth-session";
 import { login, OfficialError } from "@/lib/fanta/official";
 
 export const dynamic = "force-dynamic";
@@ -29,13 +29,18 @@ export async function POST(request: Request) {
     const session = await login(username, password);
 
     if (session.leagues.length === 0) {
+      // Surface the payload shape rather than a bare message: this is the one
+      // spot where "no leagues" and "parsed the response wrongly" look alike.
       return NextResponse.json(
-        { error: "Accesso riuscito, ma questo account non ha leghe." },
+        {
+          error:
+            "Accesso riuscito, ma non ho letto nessuna lega da questo account.",
+          shape: session.shape,
+        },
         { status: 200 },
       );
     }
 
-    const id = createSession(session);
     const response = NextResponse.json({
       username: session.user.username,
       leagues: session.leagues.map((l) => ({
@@ -47,12 +52,7 @@ export async function POST(request: Request) {
       })),
     });
 
-    response.cookies.set(SESSION_COOKIE, id, {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 8 * 60 * 60,
-    });
+    writeSession(response, session);
     return response;
   } catch (error) {
     const status = error instanceof OfficialError ? error.status : 500;

@@ -46,6 +46,12 @@ export interface OfficialSession {
   leagues: OfficialLeague[];
   /** Cookie header replayed on legacy calls. */
   cookie: string;
+  /** Set only when login succeeded but no leagues parsed, to aid diagnosis. */
+  shape?: {
+    topLevelKeys: string[];
+    dataKeys: string[];
+    legheType: string;
+  };
 }
 
 export class OfficialError extends Error {
@@ -160,7 +166,20 @@ export async function login(
 
   const leagues = parseLeagues(data.leghe);
 
+  // A successful login that yields no leagues is ambiguous: the account really
+  // has none, or the payload is not shaped the way the client bundle implied.
+  // Record the actual keys so the two can be told apart instead of guessing.
+  const shape =
+    leagues.length === 0
+      ? {
+          topLevelKeys: Object.keys(body ?? {}),
+          dataKeys: Object.keys(data),
+          legheType: typeof data.leghe,
+        }
+      : undefined;
+
   return {
+    shape,
     user: {
       id: (account.id as number) ?? 0,
       username: String(account.username ?? username),
