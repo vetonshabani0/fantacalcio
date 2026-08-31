@@ -1,0 +1,321 @@
+@import "tailwindcss";
+
+@theme {
+  /* Ground is a cold near-black; paper is warm, so the contrast never reads grey. */
+  --color-ground: #08090a;
+  --color-ground-2: #0d0f11;
+  --color-ground-3: #14171a;
+  --color-paper: #f4f2ed;
+
+  --color-ink: #f4f2ed;
+  --color-mute: #9aa0a8;
+  --color-faint: #5a6068;
+
+  /* One brand accent, doubling as "points gained". */
+  --color-acid: #c8ff2e;
+  --color-acid-dim: #93bd15;
+  --color-flare: #ff4b36;
+  --color-gold: #ffc53d;
+
+  --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: dark;
+  --line: rgba(244, 242, 237, 0.1);
+  --line-soft: rgba(244, 242, 237, 0.06);
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- typography ---------- */
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.88;
+  font-stretch: 112%;
+  text-transform: uppercase;
+}
+
+.display-tight {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+/* ---------- structure ---------- */
+
+.rule {
+  border-top: 1px solid var(--line);
+}
+
+.rule-soft {
+  border-top: 1px solid var(--line-soft);
+}
+
+/* Full-bleed on phones, gutter on larger screens. */
+.gutter {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+@media (min-width: 768px) {
+  .gutter {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+.rail {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.rail > * {
+  scroll-snap-align: center;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 768px) {
+  .rail {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* ---------- interaction ---------- */
+
+.tap {
+  transition:
+    transform 0.18s var(--ease-out-expo),
+    opacity 0.18s var(--ease-out-expo);
+}
+
+.tap:active {
+  transform: scale(0.975);
+  opacity: 0.85;
+}
+
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.4s var(--ease-out-expo);
+}
+
+.link-underline:hover {
+  background-size: 100% 1px;
+}
+
+/* ---------- live signalling ---------- */
+
+.pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-flare);
+  box-shadow: 0 0 0 0 rgba(255, 75, 54, 0.6);
+  animation: pip 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pip {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 75, 54, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(255, 75, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 75, 54, 0);
+  }
+}
+
+@keyframes sweep-up {
+  0% {
+    background-color: rgba(200, 255, 46, 0.22);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes sweep-down {
+  0% {
+    background-color: rgba(255, 75, 54, 0.22);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.sweep-up {
+  animation: sweep-up 1.5s var(--ease-out-expo);
+}
+
+.sweep-down {
+  animation: sweep-down 1.5s var(--ease-out-expo);
+}
+
+/* Horizontal score ticker on the masthead. */
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 48s linear infinite;
+}
+
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ---------- entrances ---------- */
+
+/*
+ * Entrances are CSS, not JS. A requestAnimationFrame-driven animation that
+ * never gets a frame — a throttled background tab, a browser that pauses
+ * animation, a low-end device under load — would leave content stranded at
+ * opacity 0. `animation-fill-mode: both` plus the reduced-motion rule below
+ * means the worst case is content appearing instantly, never not at all.
+ */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal {
+  animation: reveal 0.6s var(--ease-out-expo) both;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pop {
+  animation: pop 0.5s var(--ease-out-expo) both;
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(var(--grow, 1));
+  }
+}
+
+.grow-x {
+  transform-origin: left;
+  animation: grow-x 0.7s var(--ease-out-expo) both;
+}
+
+/* ---------- pitch ---------- */
+
+.pitch {
+  background:
+    repeating-linear-gradient(
+      180deg,
+      rgba(200, 255, 46, 0.035) 0 8.5%,
+      transparent 8.5% 17%
+    ),
+    radial-gradient(120% 70% at 50% 0%, rgba(200, 255, 46, 0.07), transparent 70%),
+    var(--color-ground-2);
+}
+
+/* ---------- misc ---------- */
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+::selection {
+  background: var(--color-acid);
+  color: var(--color-ground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

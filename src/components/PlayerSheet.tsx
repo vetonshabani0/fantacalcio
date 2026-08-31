@@ -1,0 +1,135 @@
+"use client";
+
+import { minuteLabel } from "@/lib/fanta/format";
+import { EVENT_LABEL } from "@/lib/fanta/rules";
+import type { EventKind } from "@/lib/fanta/types";
+import type { BoardPlayer } from "@/lib/api-types";
+import { formatPoints, Role, Sheet } from "./ui";
+
+/** Full bonus/malus breakdown for one player. */
+export function PlayerSheet({
+  player,
+  onClose,
+}: {
+  player: BoardPlayer | null;
+  onClose: () => void;
+}) {
+  return (
+    <Sheet
+      open={!!player}
+      onClose={onClose}
+      title={
+        player ? (
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Role role={player.role} />
+              <h3 className="display-tight truncate text-[22px]">
+                {player.name}
+              </h3>
+            </div>
+            <p className="label mt-1">{player.teamName}</p>
+          </div>
+        ) : null
+      }
+    >
+      {player ? (
+        <div className="px-5">
+          <div className="grid grid-cols-3 gap-3 border-y border-[var(--line)] py-4">
+            {[
+              {
+                label: "Voto",
+                value: player.grade != null ? formatPoints(player.grade) : "s.v.",
+                tone: "text-ink",
+              },
+              {
+                label: "Bonus / malus",
+                value:
+                  player.bonus === 0
+                    ? "—"
+                    : `${player.bonus > 0 ? "+" : ""}${formatPoints(player.bonus)}`,
+                tone:
+                  player.bonus > 0
+                    ? "text-acid"
+                    : player.bonus < 0
+                      ? "text-flare"
+                      : "text-faint",
+              },
+              {
+                label: "Fantavoto",
+                value:
+                  player.fantavoto != null
+                    ? formatPoints(player.fantavoto)
+                    : "—",
+                tone: "text-ink",
+              },
+            ].map((cell) => (
+              <div key={cell.label}>
+                <p className="label">{cell.label}</p>
+                <p
+                  className={`num mt-1.5 text-[30px] font-extrabold ${cell.tone}`}
+                >
+                  {cell.value}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {player.breakdown.length ? (
+            <div className="py-2">
+              {player.breakdown.map((item) => (
+                <div
+                  key={item.kind}
+                  className="flex items-center justify-between border-b border-[var(--line-soft)] py-2.5"
+                >
+                  <span className="text-[14px]">
+                    {EVENT_LABEL[item.kind as EventKind] ?? item.kind}
+                    {item.count > 1 ? (
+                      <span className="text-faint"> ×{item.count}</span>
+                    ) : null}
+                  </span>
+                  <span
+                    className={`num text-[15px] font-bold ${
+                      item.points >= 0 ? "text-acid" : "text-flare"
+                    }`}
+                  >
+                    {item.points > 0 ? "+" : ""}
+                    {formatPoints(item.points)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="py-6 text-center text-[13px] text-faint">
+              Nessun bonus o malus.
+            </p>
+          )}
+
+          {player.events.length ? (
+            <div className="pb-4 pt-2">
+              <p className="label pb-2">Cronologia</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                {player.events.map((event, i) => (
+                  <span
+                    key={`${event.kind}-${i}`}
+                    className="text-[12px] text-mute"
+                  >
+                    <span className="num text-faint">
+                      {minuteLabel(event.minute)}
+                    </span>{" "}
+                    {EVENT_LABEL[event.kind]}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {!player.hasVote && player.matchState === "pre-match" ? (
+            <p className="pb-4 text-[12px] text-faint">
+              Probabilità di partire titolare: {player.startProbability}%.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+    </Sheet>
+  );
+}
