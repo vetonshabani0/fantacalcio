@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useLiveBoard } from "@/hooks/useLive";
 import { formatFormation, minuteLabel, minuteOrder } from "@/lib/fanta/format";
 import type { BoardPlayer } from "@/lib/api-types";
+import { intlLocale, useLocale, useT } from "./LocaleProvider";
 import { MatchDetail } from "./MatchDetail";
 import { MatchRail } from "./MatchRail";
 import { PlayerSheet } from "./PlayerSheet";
@@ -18,8 +19,8 @@ import {
   Section,
 } from "./ui";
 
-function clockLabel(at: number): string {
-  return new Intl.DateTimeFormat("it-IT", {
+function clockLabel(at: number, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(at));
@@ -32,6 +33,7 @@ function Movers({
   players: BoardPlayer[];
   onSelect: (player: BoardPlayer) => void;
 }) {
+  const t = useT();
   const rated = players.filter((p) => p.hasVote && p.fantavoto != null);
   const best = [...rated]
     .sort((a, b) => (b.fantavoto ?? 0) - (a.fantavoto ?? 0))
@@ -52,7 +54,7 @@ function Movers({
     <div>
       <p className="label border-b border-[var(--line)] pb-1.5">{title}</p>
       {rows.length === 0 ? (
-        <p className="py-6 text-[13px] text-faint">Nessun voto ancora.</p>
+        <p className="py-6 text-[13px] text-faint">{t("live.noVotesYet")}</p>
       ) : (
         rows.map((player, i) => (
           <button
@@ -79,13 +81,14 @@ function Movers({
 
   return (
     <div className="gutter grid gap-10 md:grid-cols-2 md:gap-12">
-      <List title="Migliori" rows={best} tone="text-acid" />
-      <List title="Peggiori" rows={worst} tone="text-flare" />
+      <List title={t("live.best")} rows={best} tone="text-acid" />
+      <List title={t("live.worst")} rows={worst} tone="text-flare" />
     </div>
   );
 }
 
 function Changes({ players }: { players: BoardPlayer[] }) {
+  const t = useT();
   const byId = new Map(players.map((p) => [p.id, p]));
   const subs = players
     .filter((p) => p.replacedPlayerId)
@@ -96,7 +99,7 @@ function Changes({ players }: { players: BoardPlayer[] }) {
     }))
     .sort((a, b) => minuteOrder(b.minute) - minuteOrder(a.minute));
 
-  if (subs.length === 0) return <Empty>Nessuna sostituzione ancora.</Empty>;
+  if (subs.length === 0) return <Empty>{t("live.noChanges")}</Empty>;
 
   return (
     <div className="gutter">
@@ -132,6 +135,7 @@ function Changes({ players }: { players: BoardPlayer[] }) {
 
 export function LiveBoardView() {
   const { data, error, loading, connected } = useLiveBoard();
+  const { t, locale } = useLocale();
   const [selected, setSelected] = useState<number | null>(null);
   const [player, setPlayer] = useState<BoardPlayer | null>(null);
 
@@ -157,8 +161,8 @@ export function LiveBoardView() {
     return [...data.matches].sort((a, b) => kickoff(a) - kickoff(b))[0] ?? null;
   }, [data, selected]);
 
-  if (error) return <Empty>Impossibile caricare il feed: {error}</Empty>;
-  if (loading && !data) return <Loading label="Carico i voti" />;
+  if (error) return <Empty>{t("live.loadError", { msg: error })}</Empty>;
+  if (loading && !data) return <Loading label={t("live.loading")} />;
   if (!data) return null;
 
   return (
@@ -167,18 +171,18 @@ export function LiveBoardView() {
         <Reveal>
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="label">Serie A · stagione {data.pointer.seasonId}</p>
-              <h1 className="display mt-3 text-[clamp(32px,9vw,80px)]">
-                Giornata {data.pointer.matchweek}
+              <p className="label">{t("live.season", { n: data.pointer.seasonId })}</p>
+              <h1 className="display mt-3 text-[clamp(26px,7.5vw,76px)]">
+                {t("live.matchweek", { n: data.pointer.matchweek })}
               </h1>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-2 pt-1">
               {data.live ? <LivePip label="Live" /> : null}
               <span className="label !text-[9px]">
-                {connected ? "in ascolto" : "riconnessione"}
+                {connected ? t("live.listening") : t("live.reconnecting")}
               </span>
               <span className="num text-[11px] text-faint">
-                {clockLabel(data.fetchedAt)}
+                {clockLabel(data.fetchedAt, intlLocale(locale))}
               </span>
             </div>
           </div>
@@ -201,8 +205,11 @@ export function LiveBoardView() {
             title={`${activeMatch.homeTeamName} — ${activeMatch.awayTeamName}`}
             hint={
               activeMatch.homeFormation
-                ? `${formatFormation(activeMatch.homeFormation)} contro ${formatFormation(activeMatch.awayFormation)}`
-                : "Formazioni non ancora ufficiali"
+                ? t("live.lineupsVs", {
+                    a: formatFormation(activeMatch.homeFormation),
+                    b: formatFormation(activeMatch.awayFormation),
+                  })
+                : t("live.lineupsPending")
             }
             right={
               activeMatch.state !== "pre-match" ? (
@@ -233,7 +240,7 @@ export function LiveBoardView() {
       ) : null}
 
       <section className="pt-16">
-        <Section title="Migliori e peggiori" hint="Fantavoto con bonus e malus" />
+        <Section title={t("live.movers")} hint={t("live.moversHint")} />
         <div className="mt-5">
           <Movers players={data.players} onSelect={setPlayer} />
         </div>
@@ -241,8 +248,10 @@ export function LiveBoardView() {
 
       <section className="pt-16">
         <Section
-          title="Cambi"
-          hint={`${data.players.filter((p) => p.replacedPlayerId).length} sostituzioni in giornata`}
+          title={t("live.changes")}
+          hint={t("live.changesHint", {
+            n: data.players.filter((p) => p.replacedPlayerId).length,
+          })}
         />
         <div className="mt-5">
           <Changes players={data.players} />

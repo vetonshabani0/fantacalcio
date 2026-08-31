@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { LeagueRef } from "./SignIn";
+import { useT } from "./LocaleProvider";
 import { Reveal } from "./ui";
 
 const TYPE_LABEL: Record<number, string> = { 1: "Classic", 2: "Mantra" };
@@ -17,6 +18,7 @@ export function LeaguePicker({
   username: string;
   onSignOut: () => void;
 }) {
+  const t = useT();
   const [query, setQuery] = useState("");
 
   const matches = useMemo(() => {
@@ -33,20 +35,23 @@ export function LeaguePicker({
     <div>
       <div className="flex items-baseline justify-between gap-4">
         <p className="label">
-          {leagues.length} {leagues.length === 1 ? "lega" : "leghe"} · {username}
+          {t(
+            leagues.length === 1 ? "picker.count_one" : "picker.count_other",
+            { n: leagues.length, user: username },
+          )}
         </p>
         <span className="flex shrink-0 items-center gap-4">
           <a
             href="/api/real/debug"
             target="_blank"
             rel="noreferrer"
-            title="Mostra i dati grezzi che il server ufficiale restituisce per la tua lega"
+            title={t("picker.diagnosticsTitle")}
             className="tap label hover:!text-ink"
           >
-            Diagnostica
+            {t("picker.diagnostics")}
           </a>
           <button onClick={onSignOut} className="tap label hover:!text-ink">
-            Esci
+            {t("picker.signOut")}
           </button>
         </span>
       </div>
@@ -54,8 +59,8 @@ export function LeaguePicker({
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Cerca fra le tue leghe"
-        aria-label="Cerca fra le tue leghe"
+        placeholder={t("picker.search")}
+        aria-label={t("picker.search")}
         autoCapitalize="off"
         className="mt-4 w-full border-b border-[var(--line)] bg-transparent pb-3 text-[18px] font-medium text-ink outline-none transition-colors placeholder:text-faint focus:border-acid md:text-[20px]"
       />
@@ -63,7 +68,7 @@ export function LeaguePicker({
       <div className="mt-2">
         {matches.length === 0 ? (
           <p className="py-8 text-[13px] text-faint">
-            Nessuna delle tue leghe si chiama così.
+            {t("picker.noMatch")}
           </p>
         ) : (
           matches.map((league, i) => (
@@ -81,7 +86,7 @@ export function LeaguePicker({
                     {TYPE_LABEL[league.type]
                       ? ` · ${TYPE_LABEL[league.type]}`
                       : ""}
-                    {league.isAdmin ? " · admin" : ""}
+                    {league.isAdmin ? ` · ${t("picker.admin")}` : ""}
                   </span>
                 </span>
                 <span className="shrink-0 text-acid">→</span>

@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useFlash } from "@/hooks/useLive";
 import type { SerializedStanding } from "@/lib/league-view";
+import { useT } from "./LocaleProvider";
 import { formatTotal, Ticker } from "./ui";
 
 function Trend({ trend }: { trend: SerializedStanding["trend"] }) {
@@ -93,16 +94,19 @@ export function StandingsTable({
   onSelect: (teamId: string) => void;
   showLive: boolean;
 }) {
+  const t = useT();
   return (
     <div>
       <div className="flex items-center gap-3 border-b border-[var(--line)] pb-1.5">
         <span className="label w-5 text-right">#</span>
         <span className="w-2.5" />
-        <span className="label flex-1">Squadra</span>
+        <span className="label flex-1">{t("table.team")}</span>
         {showLive ? (
-          <span className="label w-14 text-right !text-acid">Live</span>
+          <span className="label w-14 text-right !text-acid">
+            {t("table.live")}
+          </span>
         ) : null}
-        <span className="label w-8 text-right">Pt</span>
+        <span className="label w-8 text-right">{t("table.points")}</span>
       </div>
 
       {standings.map((row, index) => (

@@ -3,14 +3,15 @@
 import { motion } from "motion/react";
 import { useFlash } from "@/hooks/useLive";
 import type { RealMatch } from "@/lib/fanta/types";
+import { intlLocale, useLocale } from "./LocaleProvider";
 import { MatchState } from "./ui";
 
-export function kickoffLabel(match: RealMatch): string {
+export function kickoffLabel(match: RealMatch, locale = "it-IT"): string {
   if (!match.kickoff) return "";
   // The feed publishes Italian wall-clock time with no zone marker.
   const date = new Date(`${match.kickoff}Z`);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("it-IT", {
+  return new Intl.DateTimeFormat(locale, {
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
@@ -57,6 +58,7 @@ export function MatchCard({
   active?: boolean;
   onSelect?: () => void;
 }) {
+  const { locale } = useLocale();
   const played = match.state !== "pre-match";
   const decided = match.state === "finished";
   const homeLost = decided && match.homeGoals < match.awayGoals;
@@ -76,7 +78,9 @@ export function MatchCard({
     >
       <div className="flex items-center justify-between gap-2">
         <MatchState state={match.state} />
-        <span className="label !text-[9px]">{kickoffLabel(match)}</span>
+        <span className="label !text-[9px]">
+          {kickoffLabel(match, intlLocale(locale))}
+        </span>
       </div>
       <div className="mt-3 space-y-1">
         <Side

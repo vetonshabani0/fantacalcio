@@ -2,10 +2,11 @@
 
 import { motion } from "motion/react";
 import { minuteLabel } from "@/lib/fanta/format";
-import { EVENT_GLYPH, EVENT_LABEL } from "@/lib/fanta/rules";
+import { EVENT_GLYPH } from "@/lib/fanta/rules";
 import type { EventKind } from "@/lib/fanta/types";
 import type { BoardPlayer } from "@/lib/api-types";
 import { useFlash } from "@/hooks/useLive";
+import { useT } from "./LocaleProvider";
 import { formatPoints, Role } from "./ui";
 
 const POSITIVE: EventKind[] = [
@@ -40,13 +41,14 @@ export function EventChips({
   events: { kind: EventKind; minute: number }[];
   className?: string;
 }) {
+  const t = useT();
   if (events.length === 0) return null;
   return (
     <span className={`flex flex-wrap items-center gap-x-2 gap-y-0.5 ${className}`}>
       {events.map((event, i) => (
         <span
           key={`${event.kind}-${i}`}
-          title={`${EVENT_LABEL[event.kind]} · ${minuteLabel(event.minute)}`}
+          title={`${t(`event.${event.kind}`)} · ${minuteLabel(event.minute)}`}
           className={`inline-flex items-baseline gap-0.5 text-[11px] leading-none ${tone(event.kind)}`}
         >
           <span aria-hidden>{EVENT_GLYPH[event.kind] ?? "•"}</span>
@@ -105,14 +107,14 @@ export function PlayerRow({
 
       <span className="flex shrink-0 items-baseline gap-3">
         <span
-          className={`num w-7 text-right text-[13px] ${
+          className={`num w-10 text-right text-[13px] ${
             player.hasVote ? "text-mute" : "text-faint"
           }`}
         >
           {player.grade != null ? formatPoints(player.grade) : "sv"}
         </span>
         <span
-          className={`num w-11 text-right text-[17px] font-extrabold ${
+          className={`num w-12 text-right text-[17px] font-extrabold ${
             !player.hasVote
               ? "text-faint"
               : player.bonus > 0
@@ -130,12 +132,17 @@ export function PlayerRow({
 }
 
 export function PlayerRowHeader() {
+  const t = useT();
   return (
     <div className="flex items-center gap-3 border-b border-[var(--line)] pb-1.5">
       <span className="w-3" />
-      <span className="label flex-1">Giocatore</span>
-      <span className="label w-7 text-right">Voto</span>
-      <span className="label w-11 text-right">Fanta</span>
+      <span className="label flex-1">{t("squad.player")}</span>
+      <span className="label w-10 shrink-0 truncate text-right !tracking-normal">
+        {t("squad.grade")}
+      </span>
+      <span className="label w-12 shrink-0 truncate text-right !tracking-normal">
+        {t("squad.fanta")}
+      </span>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useT } from "./LocaleProvider";
 
 /** Drafts a league from real Serie A players and drops the user straight into it. */
 export function DemoButton({
@@ -12,6 +13,7 @@ export function DemoButton({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const t = useT();
   const [busy, setBusy] = useState(false);
 
   async function create() {
@@ -33,7 +35,7 @@ export function DemoButton({
 
   return (
     <button onClick={create} disabled={busy} className={className}>
-      {busy ? "Sorteggio rose…" : children}
+      {busy ? t("build.demoBusy") : children}
     </button>
   );
 }

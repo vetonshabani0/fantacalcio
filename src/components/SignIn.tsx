@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useT } from "./LocaleProvider";
 
 export interface LeagueRef {
   id: number;
@@ -26,6 +27,7 @@ export function SignIn({
   onSignedIn: (leagues: LeagueRef[], username: string) => void;
 }) {
   const router = useRouter();
+  const t = useT();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
@@ -51,14 +53,14 @@ export function SignIn({
       };
 
       if (!res.ok || body.error) {
-        setError(body.error ?? "Accesso non riuscito.");
+        setError(body.error ?? t("auth.failed"));
         return;
       }
       setPassword("");
       onSignedIn(body.leagues ?? [], body.username ?? username);
       router.refresh();
     } catch {
-      setError("Impossibile contattare il server.");
+      setError(t("auth.unreachable"));
     } finally {
       setBusy(false);
     }
@@ -69,7 +71,7 @@ export function SignIn({
       <div className="space-y-7">
         <div>
           <label htmlFor="fc-user" className="label mb-2 block">
-            Username o email Fantacalcio
+            {t("auth.username")}
           </label>
           <input
             id="fc-user"
@@ -85,7 +87,7 @@ export function SignIn({
 
         <div>
           <label htmlFor="fc-pass" className="label mb-2 block">
-            Password
+            {t("auth.password")}
           </label>
           <div className="relative">
             <input
@@ -102,7 +104,7 @@ export function SignIn({
               onClick={() => setShow((v) => !v)}
               className="tap label absolute bottom-3 right-0 hover:!text-ink"
             >
-              {show ? "nascondi" : "mostra"}
+              {show ? t("auth.hide") : t("auth.show")}
             </button>
           </div>
         </div>
@@ -113,7 +115,7 @@ export function SignIn({
         disabled={busy || !username.trim() || !password}
         className="tap mt-8 w-full rounded-full bg-acid px-6 py-3.5 text-[15px] font-bold text-ground disabled:opacity-30 sm:w-auto sm:px-8"
       >
-        {busy ? "Accesso in corso…" : "Accedi e vedi le tue leghe"}
+        {busy ? t("auth.submitting") : t("auth.submit")}
       </button>
 
       <AnimatePresence>
@@ -130,10 +132,7 @@ export function SignIn({
       </AnimatePresence>
 
       <p className="mt-7 border-t border-[var(--line)] pt-5 text-[12px] leading-relaxed text-faint">
-        Le credenziali vengono inoltrate una sola volta al login ufficiale di
-        Leghe Fantacalcio da questo server, in locale. La password non viene
-        salvata da nessuna parte: restano in memoria solo i token della
-        sessione, dietro un cookie httpOnly, e spariscono al riavvio.
+        {t("auth.privacy")}
       </p>
     </form>
   );

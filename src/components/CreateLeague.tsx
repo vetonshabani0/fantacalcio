@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DemoButton } from "./DemoButton";
+import { useT } from "./LocaleProvider";
 import { Loading, Reveal, Role, Section } from "./ui";
 
 interface IndexedPlayer {
@@ -37,6 +38,7 @@ const field =
 
 export function CreateLeague() {
   const router = useRouter();
+  const t = useT();
   const [players, setPlayers] = useState<IndexedPlayer[] | null>(null);
   const [name, setName] = useState("");
   const [teams, setTeams] = useState<TeamDraft[]>([emptyTeam(), emptyTeam()]);
@@ -52,7 +54,7 @@ export function CreateLeague() {
     fetch("/api/players?limit=300")
       .then((res) => res.json())
       .then((body: { players: IndexedPlayer[] }) => setPlayers(body.players))
-      .catch(() => setError("Impossibile caricare la lista giocatori."));
+      .catch(() => setError(t("build.loadPlayersFailed")));
   }, []);
 
   const byId = useMemo(
@@ -149,16 +151,16 @@ export function CreateLeague() {
 
   async function submit() {
     setError(null);
-    if (!name.trim()) return setError("Dai un nome alla lega.");
+    if (!name.trim()) return setError(t("build.needName"));
 
     const named = teams.map((team, i) => ({
       ...team,
-      name: team.name.trim() || `Squadra ${i + 1}`,
+      name: team.name.trim() || t("build.teamPlaceholder", { n: i + 1 }),
     }));
     const short = named.find((team) => team.roster.length < 11);
     if (short) {
       return setError(
-        `"${short.name}" ha ${short.roster.length} giocatori: ne servono almeno 11.`,
+        t("build.needPlayers", { team: short.name, n: short.roster.length }),
       );
     }
 
@@ -171,7 +173,7 @@ export function CreateLeague() {
       });
       const body = (await res.json()) as { code?: string; error?: string };
       if (!res.ok || !body.code) {
-        setError(body.error ?? "Creazione non riuscita.");
+        setError(body.error ?? t("build.createFailed"));
         return;
       }
       router.push(`/lega/${body.code}`);
@@ -188,29 +190,25 @@ export function CreateLeague() {
     <>
       <section className="gutter pt-10 md:pt-16">
         <Reveal>
-          <p className="label">Nuova lega</p>
+          <p className="label">{t("build.eyebrow")}</p>
           <h1 className="display mt-3 text-[clamp(40px,11vw,84px)]">
-            Costruisci
-            <br />
-            la tua lega
+            {t("build.title")}
           </h1>
           <p className="mt-5 max-w-[46ch] text-[15px] leading-relaxed text-mute">
-            Crea le squadre e assegna le rose con i giocatori reali della Serie
-            A. Da lì in poi classifica, sfide e sostituzioni si aggiornano da
-            sole.{" "}
+            {t("build.lead")}{" "}
             <DemoButton className="font-semibold text-acid">
-              Oppure parti da una lega dimostrativa →
+              {t("build.demo")}
             </DemoButton>
           </p>
         </Reveal>
 
         <Reveal delay={0.08}>
           <div className="mt-10 max-w-xl">
-            <p className="label mb-2">Nome della lega</p>
+            <p className="label mb-2">{t("build.leagueName")}</p>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Es. Lega degli Amici"
+              placeholder={t("build.leagueNamePlaceholder")}
               className={field}
             />
           </div>
@@ -219,22 +217,22 @@ export function CreateLeague() {
 
       <section className="pt-14">
         <Section
-          title="Squadre"
-          hint="Almeno due. Il calendario è andata e ritorno."
+          title={t("build.teams")}
+          hint={t("build.teamsHint")}
           right={
             <div className="flex gap-2">
               <button
                 onClick={() => setTeams((t) => [...t, emptyTeam()])}
                 className="tap label rounded-full border border-[var(--line)] px-3 py-1.5 hover:!text-ink"
               >
-                + Squadra
+                {t("build.addTeam")}
               </button>
               <button
                 onClick={autoFill}
                 disabled={!players}
                 className="tap label rounded-full border border-acid/40 bg-acid/10 px-3 py-1.5 !text-acid disabled:opacity-30"
               >
-                Completa rose
+                {t("build.fillRosters")}
               </button>
             </div>
           }
@@ -254,7 +252,8 @@ export function CreateLeague() {
                 }`}
               >
                 <span className="text-[13px] font-semibold">
-                  {team.name.trim() || `Squadra ${index + 1}`}
+                  {team.name.trim() ||
+                    t("build.teamPlaceholder", { n: index + 1 })}
                 </span>
                 <span
                   className={`num ml-2 text-[12px] ${
@@ -278,27 +277,27 @@ export function CreateLeague() {
               }}
               className="tap label rounded-full border border-flare/35 px-4 py-2 !text-flare"
             >
-              Rimuovi
+              {t("build.removeTeam")}
             </button>
           ) : null}
         </div>
 
         <div className="gutter mt-8 grid max-w-3xl gap-6 sm:grid-cols-2">
           <div>
-            <p className="label mb-2">Nome squadra</p>
+            <p className="label mb-2">{t("build.teamName")}</p>
             <input
               value={current.name}
               onChange={(e) => updateTeam(active, { name: e.target.value })}
-              placeholder={`Squadra ${active + 1}`}
+              placeholder={t("build.teamPlaceholder", { n: active + 1 })}
               className={field}
             />
           </div>
           <div>
-            <p className="label mb-2">Nome del manager</p>
+            <p className="label mb-2">{t("build.managerName")}</p>
             <input
               value={current.manager}
               onChange={(e) => updateTeam(active, { manager: e.target.value })}
-              placeholder="Come ti cercheranno"
+              placeholder={t("build.managerPlaceholder")}
               className={field}
             />
           </div>
@@ -318,15 +317,15 @@ export function CreateLeague() {
 
       <section className="pt-14">
         <Section
-          title="Rosa"
-          hint="Un giocatore può stare in una sola squadra"
+          title={t("build.roster")}
+          hint={t("build.rosterHint")}
         />
 
         <div className="gutter mt-5 flex flex-wrap items-center gap-3">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Cerca giocatore o club"
+            placeholder={t("build.searchPlayer")}
             className="min-w-[180px] flex-1 border-b border-[var(--line)] bg-transparent pb-2 text-[15px] outline-none placeholder:text-faint focus:border-acid"
           />
           <div className="flex gap-1.5">
@@ -347,7 +346,7 @@ export function CreateLeague() {
         </div>
 
         {!players ? (
-          <Loading label="Carico i giocatori" />
+          <Loading label={t("build.loadingPlayers")} />
         ) : (
           <div className="gutter mt-4 grid max-h-[26rem] grid-cols-1 gap-x-8 overflow-y-auto overscroll-contain no-scrollbar sm:grid-cols-2 lg:grid-cols-3">
             {visible.map((player) => {
@@ -355,7 +354,8 @@ export function CreateLeague() {
               const mine = holder === active;
               const other =
                 holder != null && holder !== active
-                  ? teams[holder].name.trim() || `Squadra ${holder + 1}`
+                  ? teams[holder].name.trim() ||
+                    t("build.teamPlaceholder", { n: holder + 1 })
                   : null;
               return (
                 <button
@@ -399,7 +399,7 @@ export function CreateLeague() {
               exit={{ opacity: 0 }}
               className={`min-w-0 flex-1 text-[12px] leading-snug ${error ? "text-flare" : "text-faint"}`}
             >
-              {error ?? "Riceverai un codice da condividere"}
+              {error ?? t("build.shareNote")}
             </motion.span>
           </AnimatePresence>
           <button
@@ -407,7 +407,7 @@ export function CreateLeague() {
             disabled={saving}
             className="tap shrink-0 rounded-full bg-acid px-5 py-2.5 text-[13px] font-bold text-ground disabled:opacity-30"
           >
-            {saving ? "Creo…" : "Crea lega"}
+            {saving ? t("build.submitting") : t("build.submit")}
           </button>
         </div>
       </div>

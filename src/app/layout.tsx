@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import { Chrome } from "@/components/Chrome";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -35,9 +36,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="it" className={`${archivo.variable} ${inter.variable}`}>
+    <html
+      lang="it"
+      suppressHydrationWarning
+      className={`${archivo.variable} ${inter.variable}`}
+    >
       <body>
-        <Chrome>{children}</Chrome>
+        <LocaleProvider>
+          <Chrome>{children}</Chrome>
+        </LocaleProvider>
       </body>
     </html>
   );

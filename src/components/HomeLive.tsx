@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useLiveBoard } from "@/hooks/useLive";
+import { useT } from "./LocaleProvider";
 import { MatchRail, ScoreMarquee } from "./MatchRail";
 import { Reveal, Section } from "./ui";
 
 /** The live strip and match rail on the home page. */
 export function HomeLive() {
   const { data } = useLiveBoard();
+  const t = useT();
 
   if (!data) {
     return <div className="h-[168px]" aria-hidden />;
@@ -20,11 +22,12 @@ export function HomeLive() {
       <Reveal delay={0.05}>
         <div className="pt-10">
           <Section
-            title={`Giornata ${data.pointer.matchweek}`}
-            hint="I risultati reali che alimentano il calcolo della tua lega"
+
+            title={t("live.matchweek", { n: data.pointer.matchweek })}
+            hint={t("live.realResults")}
             right={
               <Link href="/live" className="label link-underline !text-ink">
-                Tutti i voti →
+                {t("live.allVotes")}
               </Link>
             }
           />

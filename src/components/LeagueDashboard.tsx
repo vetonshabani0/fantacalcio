@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { LeagueView } from "@/lib/league-view";
 import { HeadToHeadCard } from "./HeadToHead";
+import { useT } from "./LocaleProvider";
 import { LineupEditor } from "./LineupEditor";
 import { StandingsTable } from "./StandingsTable";
 import {
@@ -30,6 +31,7 @@ function MatchweekPicker({
   total: number;
   onChange: (mw: number) => void;
 }) {
+  const t = useT();
   const Step = ({ delta, label }: { delta: number; label: string }) => {
     const target = matchweek + delta;
     const disabled = target < 1 || target > total;
@@ -47,11 +49,11 @@ function MatchweekPicker({
 
   return (
     <div className="flex items-center gap-2">
-      <Step delta={-1} label="Giornata precedente" />
+      <Step delta={-1} label={t("league.prevMatchweek")} />
       <span className="num min-w-[3.5rem] text-center text-[13px] font-bold">
-        G{matchweek}
+        {t("league.matchweekShort", { n: matchweek })}
       </span>
-      <Step delta={1} label="Giornata successiva" />
+      <Step delta={1} label={t("league.nextMatchweek")} />
     </div>
   );
 }
@@ -66,6 +68,7 @@ function MyBanner({
   teamId: string;
   onOpenLineup: () => void;
 }) {
+  const t = useT();
   const row = view.standings.find((s) => s.teamId === teamId);
   const fixture = view.fixtures.find(
     (f) => f.home.teamId === teamId || f.away.teamId === teamId,
@@ -88,27 +91,27 @@ function MyBanner({
     <div className="rounded-2xl border border-acid/35 bg-acid/[0.05] p-4 md:p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="label !text-acid">La tua squadra</p>
+          <p className="label !text-acid">{t("league.myTeam")}</p>
           <h2 className="display-tight mt-1.5 truncate text-[24px] md:text-[28px]">
             {row.teamName}
           </h2>
         </div>
         <button onClick={onOpenLineup} className="tap label shrink-0 rounded-full border border-acid/40 px-3 py-1.5 !text-acid">
-          Formazione
+          {t("league.lineup")}
         </button>
       </div>
 
       <div className="mt-4 grid max-w-md grid-cols-3 gap-3">
         <div>
-          <p className="label">Posizione</p>
+          <p className="label">{t("league.position")}</p>
           <p className="num mt-1 text-[26px] font-extrabold">{row.position}º</p>
         </div>
         <div>
-          <p className="label">Punti</p>
+          <p className="label">{t("league.points")}</p>
           <p className="num mt-1 text-[26px] font-extrabold">{row.points}</p>
         </div>
         <div>
-          <p className="label">Live</p>
+          <p className="label">{t("league.live")}</p>
           <p className="num mt-1 text-[26px] font-extrabold text-acid">
             {me ? (
               <Ticker value={me.total} decimals={me.total % 1 === 0 ? 0 : 1} />
@@ -121,17 +124,18 @@ function MyBanner({
 
       {rival && lead != null ? (
         <p className="mt-3 border-t border-acid/20 pt-3 text-[12px] text-mute">
-          Contro <span className="text-ink">{rival.teamName}</span> ·{" "}
+          {t("league.against")}{" "}
+          <span className="text-ink">{rival.teamName}</span> ·{" "}
           {lead > 0 ? (
             <span className="text-acid">
-              avanti di {formatTotal(Math.abs(lead))}
+              {t("league.ahead", { n: formatTotal(Math.abs(lead)) })}
             </span>
           ) : lead < 0 ? (
             <span className="text-flare">
-              sotto di {formatTotal(Math.abs(lead))}
+              {t("league.behind", { n: formatTotal(Math.abs(lead)) })}
             </span>
           ) : (
-            <span>in parità</span>
+            <span>{t("league.level")}</span>
           )}
         </p>
       ) : null}
@@ -147,6 +151,7 @@ export function LeagueDashboard({
   initialTeamId: string | null;
 }) {
   const { tick, connected } = useLiveVersion();
+  const t = useT();
   const [matchweek, setMatchweek] = useState<number | null>(null);
   const [teamId, setTeamId] = useState<string | null>(initialTeamId);
   const [tab, setTab] = useState<Tab>(initialTeamId ? "sfida" : "classifica");
@@ -180,7 +185,7 @@ export function LeagueDashboard({
   }, [myFixtureIndex, data?.matchweek]);
 
   if (error) return <Empty>{error}</Empty>;
-  if (loading && !data) return <Loading label="Calcolo la lega" />;
+  if (loading && !data) return <Loading label={t("league.loading")} />;
   if (!data) return null;
 
   const toggle = (index: number) =>
@@ -211,7 +216,7 @@ export function LeagueDashboard({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex items-center gap-3">
-                <p className="label">Lega</p>
+                <p className="label">{t("nav.leagues")}</p>
                 <CopyChip text={data.league.code} />
               </div>
               <h1 className="display mt-3 text-[clamp(34px,9vw,72px)]">
@@ -221,15 +226,18 @@ export function LeagueDashboard({
             <div className="flex shrink-0 flex-col items-end gap-2 pt-1">
               {data.live ? <LivePip label="Live" /> : null}
               <span className="label !text-[9px]">
-                {connected ? "in ascolto" : "riconnessione"}
+                {connected ? t("live.listening") : t("live.reconnecting")}
               </span>
             </div>
           </div>
 
           <p className="mt-4 text-[12px] text-faint">
-            {data.league.teamCount} squadre · giornata Serie A{" "}
-            {data.realMatchweek} · gol a quota {data.league.firstGoalThreshold},
-            poi ogni {data.league.goalStep}
+            {t("league.meta", {
+              teams: data.league.teamCount,
+              mw: data.realMatchweek,
+              first: data.league.firstGoalThreshold,
+              step: data.league.goalStep,
+            })}
           </p>
         </Reveal>
 
@@ -240,8 +248,8 @@ export function LeagueDashboard({
                 value={tab}
                 onChange={setTab}
                 options={[
-                  { value: "sfida", label: "Sfide" },
-                  { value: "classifica", label: "Classifica" },
+                  { value: "sfida", label: t("league.fixtures") },
+                  { value: "classifica", label: t("league.table") },
                 ]}
               />
             </div>
@@ -277,11 +285,11 @@ export function LeagueDashboard({
           {tab === "classifica" ? (
             <section className="pt-10">
               <Section
-                title="Classifica"
+                title={t("league.table")}
                 hint={
                   data.matchesSettled
-                    ? "Giornata conclusa"
-                    : "Live è il punteggio in corso · tocca una squadra per seguirla"
+                    ? t("league.settled")
+                    : t("league.liveHint")
                 }
               />
               <div className="gutter mt-5">
@@ -296,12 +304,12 @@ export function LeagueDashboard({
           ) : (
             <section className="pt-10">
               <Section
-                title={`Giornata ${data.matchweek}`}
-                hint={`${data.fixtures.length} scontri diretti`}
+                title={t("live.matchweek", { n: data.matchweek })}
+                hint={t("league.fixtureCount", { n: data.fixtures.length })}
               />
               <div className="gutter mt-5 flex flex-col gap-4">
                 {ordered.length === 0 ? (
-                  <Empty>Nessuna sfida in calendario.</Empty>
+                  <Empty>{t("league.noFixtures")}</Empty>
                 ) : (
                   ordered.map((fixture) => {
                     const index = data.fixtures.indexOf(fixture);

@@ -3,16 +3,46 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { LOCALES, LOCALE_LABEL } from "@/lib/i18n";
+import { useLocale, useT } from "./LocaleProvider";
 
 const IS_STATIC = process.env.NEXT_PUBLIC_STATIC === "1";
 
 const TABS = [
-  { href: "/", label: "Home", glyph: "◎" },
-  { href: "/live", label: "Diretta", glyph: "◈" },
+  { href: "/", key: "nav.home" as const, glyph: "◎" },
+  { href: "/live", key: "nav.live" as const, glyph: "◈" },
   ...(IS_STATIC
     ? []
-    : [{ href: "/lega-reale", label: "Le mie leghe", glyph: "▤" }]),
+    : [{ href: "/lega-reale", key: "nav.leagues" as const, glyph: "▤" }]),
 ];
+
+function LanguageSwitch() {
+  const { locale, setLocale } = useLocale();
+  const { t } = useLocale();
+
+  return (
+    <div
+      className="flex items-center gap-0.5 rounded-full border border-[var(--line)] p-0.5"
+      role="group"
+      aria-label={t("nav.language")}
+    >
+      {LOCALES.map((code) => (
+        <button
+          key={code}
+          onClick={() => setLocale(code)}
+          aria-pressed={locale === code}
+          className={`tap rounded-full px-2 py-1 text-[10px] font-bold tracking-widest transition-colors ${
+            locale === code
+              ? "bg-paper text-ground"
+              : "text-faint hover:text-ink"
+          }`}
+        >
+          {LOCALE_LABEL[code]}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
@@ -24,8 +54,27 @@ function isActive(pathname: string, href: string): boolean {
  * Phones get a thumb-reachable tab bar pinned to the bottom; wider screens get
  * a conventional masthead. Only one of the two is ever mounted visibly.
  */
+function MobileLanguageSwitch() {
+  const { locale, setLocale, t } = useLocale();
+  const next = LOCALES[(LOCALES.indexOf(locale) + 1) % LOCALES.length];
+
+  return (
+    <button
+      onClick={() => setLocale(next)}
+      aria-label={`${t("nav.language")}: ${LOCALE_LABEL[next]}`}
+      className="tap flex flex-col items-center gap-1 py-3"
+    >
+      <span className="num text-[13px] font-bold leading-none text-acid">
+        {LOCALE_LABEL[locale]}
+      </span>
+      <span className="label !text-[9px]">{t("nav.language")}</span>
+    </button>
+  );
+}
+
 export function Chrome({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? "/";
+  const t = useT();
 
   return (
     <>
@@ -38,7 +87,7 @@ export function Chrome({ children }: { children: ReactNode }) {
             </span>
           </Link>
           <nav className="flex items-center gap-8">
-            {TABS.filter((t) => t.href !== "/").map((tab) => (
+            {TABS.filter((tab) => tab.href !== "/").map((tab) => (
               <Link
                 key={tab.href}
                 href={tab.href}
@@ -46,9 +95,10 @@ export function Chrome({ children }: { children: ReactNode }) {
                   isActive(pathname, tab.href) ? "!text-ink" : "hover:!text-ink"
                 }`}
               >
-                {tab.label}
+                {t(tab.key)}
               </Link>
             ))}
+            <LanguageSwitch />
           </nav>
         </div>
       </header>
@@ -58,7 +108,12 @@ export function Chrome({ children }: { children: ReactNode }) {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-[var(--line)] bg-ground/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }}>
+        <div
+          className="grid"
+          style={{
+            gridTemplateColumns: `repeat(${TABS.length + 1}, minmax(0, 1fr))`,
+          }}
+        >
           {TABS.map((tab) => {
             const active = isActive(pathname, tab.href);
             return (
@@ -79,7 +134,7 @@ export function Chrome({ children }: { children: ReactNode }) {
                     active ? "!text-ink" : ""
                   }`}
                 >
-                  {tab.label}
+                  {t(tab.key)}
                 </span>
                 {active ? (
                   <span className="absolute inset-x-[38%] top-0 h-px bg-acid" />
@@ -87,6 +142,8 @@ export function Chrome({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+
+          <MobileLanguageSwitch />
         </div>
       </nav>
     </>

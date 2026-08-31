@@ -44,6 +44,7 @@ const DROP = [
   "src/components/StandingsTable.tsx",
   "src/components/LineupEditor.tsx",
   "src/components/RealEntry.tsx",
+  "src/components/MyLeaguesIntro.tsx",
   "src/components/RealLeagueView.tsx",
   "src/components/LeaguePicker.tsx",
   "src/components/SignIn.tsx",
@@ -51,33 +52,36 @@ const DROP = [
   "src/components/EntryForm.tsx",
 ];
 
-const LANDING = `import Link from "next/link";
+const LANDING = `"use client";
+
+import Link from "next/link";
 import { HomeLive } from "@/components/HomeLive";
+import { useT } from "@/components/LocaleProvider";
 import { Reveal } from "@/components/ui";
 
 export default function HomePage() {
+  const t = useT();
+
   return (
     <>
       <section className="gutter pt-12 md:pt-20">
         <Reveal>
-          <p className="label">Serie A · in diretta</p>
+          <p className="label">{t("home.eyebrow")}</p>
         </Reveal>
 
         <Reveal delay={0.06}>
           <h1 className="display mt-5 text-[clamp(46px,14vw,132px)]">
-            Il fanta,
+            {t("home.staticTitle1")}
             <br />
-            <span className="text-acid">minuto</span>
+            <span className="text-acid">{t("home.staticTitle2")}</span>
             <br />
-            per minuto.
+            {t("home.staticTitle3")}
           </h1>
         </Reveal>
 
         <Reveal delay={0.12}>
           <p className="mt-7 max-w-[46ch] text-[15px] leading-relaxed text-mute md:text-[17px]">
-            Voti, bonus e malus, sostituzioni e risultati della Serie A in
-            tempo reale, letti dal feed pubblico di Leghe Fantacalcio e
-            calcolati direttamente nel browser.
+            {t("home.staticLead")}
           </p>
         </Reveal>
 
@@ -86,7 +90,7 @@ export default function HomePage() {
             href="/live"
             className="tap mt-9 inline-block rounded-full bg-acid px-6 py-3 text-[15px] font-bold text-ground"
           >
-            Vai alla diretta →
+            {t("home.staticCta")}
           </Link>
         </Reveal>
       </section>
@@ -98,19 +102,16 @@ export default function HomePage() {
       <section className="gutter pt-16">
         <div className="border-t border-[var(--line)] pt-6">
           <p className="max-w-[70ch] text-[12px] leading-relaxed text-faint">
-            Questa è la versione statica. Le funzioni sulla tua lega reale —
-            accesso con il tuo account Fantacalcio, classifica, scontro diretto
-            e sostituzioni — richiedono un server, perché i backend ufficiali
-            rifiutano le chiamate anonime e non permettono richieste da altri
-            domini. Il codice completo è su{" "}
+            {t("home.staticNote")}{" "}
             <a
               className="link-underline text-mute"
               href="https://github.com/vetonshabani0/fantacalcio"
             >
               GitHub
             </a>
-            : eseguilo con <span className="text-mute">pnpm dev</span> per
-            avere tutto.
+            {t("home.staticNoteEnd")}{" "}
+            <span className="text-mute">pnpm dev</span>{" "}
+            {t("home.staticNoteEnd2")}
           </p>
         </div>
       </section>

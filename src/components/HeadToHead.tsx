@@ -8,6 +8,7 @@ import type {
   SerializedSide,
   SerializedSlot,
 } from "@/lib/league-view";
+import { useT } from "./LocaleProvider";
 import { Pitch } from "./Pitch";
 import { formatPoints, formatTotal, Role, Segmented, Ticker } from "./ui";
 
@@ -18,6 +19,7 @@ function goalProgress(total: number, first: number, step: number): number {
 }
 
 function SlotLine({ slot }: { slot: SerializedSlot }) {
+  const t = useT();
   const flash = useFlash(slot.fantavoto);
 
   return (
@@ -39,14 +41,17 @@ function SlotLine({ slot }: { slot: SerializedSlot }) {
         {slot.substitution ? (
           <div className="mt-1 text-[10.5px] leading-tight">
             <span className="text-flare/75">↓ {slot.substitution.outName}</span>
-            <span className="text-faint"> {slot.substitution.outReason}</span>
+            <span className="text-faint">
+              {" "}
+              {t(slot.substitution.outReason as "h2h.reasonNoVote")}
+            </span>
             <span className="text-acid"> ↑ {slot.substitution.inName}</span>
           </div>
         ) : null}
 
         {slot.void ? (
           <div className="mt-1 text-[10.5px] text-gold/85">
-            Senza voto, nessun sostituto disponibile
+            {t("h2h.noSubstitute")}
           </div>
         ) : null}
 
@@ -82,6 +87,7 @@ function SlotLine({ slot }: { slot: SerializedSlot }) {
 }
 
 function SideDetail({ side }: { side: SerializedSide }) {
+  const t = useT();
   return (
     <div>
       <Pitch side={side} />
@@ -94,13 +100,15 @@ function SideDetail({ side }: { side: SerializedSide }) {
 
       <dl className="mt-4 space-y-1.5 text-[12px]">
         <div className="flex justify-between">
-          <dt className="text-faint">Somma fantavoti</dt>
+          <dt className="text-faint">{t("h2h.sumOfScores")}</dt>
           <dd className="num text-mute">{formatTotal(side.baseTotal)}</dd>
         </div>
         {side.defenseAverage != null ? (
           <div className="flex justify-between">
             <dt className="text-faint">
-              Modificatore difesa · media {side.defenseAverage.toFixed(2)}
+              {t("h2h.defenceModifier", {
+                n: side.defenseAverage.toFixed(2),
+              })}
             </dt>
             <dd
               className={`num ${side.defenseModifier > 0 ? "text-acid" : "text-mute"}`}
@@ -112,7 +120,7 @@ function SideDetail({ side }: { side: SerializedSide }) {
         ) : null}
         {side.bench.length ? (
           <div className="pt-1.5 text-faint">
-            Panchina: {side.bench.map((b) => b.name).join(", ")}
+            {t("h2h.bench")}: {side.bench.map((b) => b.name).join(", ")}
           </div>
         ) : null}
       </dl>
@@ -133,6 +141,7 @@ function Half({
   first: number;
   step: number;
 }) {
+  const t = useT();
   const flash = useFlash(side.total);
   const right = align === "right";
 
@@ -155,8 +164,8 @@ function Half({
       </div>
       <p className="mt-1.5 text-[10.5px] text-faint">
         {side.pointsToNextGoal > 0
-          ? `${formatTotal(side.pointsToNextGoal)} al gol`
-          : "gol raggiunto"}
+          ? t("h2h.toNextGoal", { n: formatTotal(side.pointsToNextGoal) })
+          : t("h2h.goalReached")}
         {" · "}
         {side.ratedSlots}/11
       </p>
@@ -179,6 +188,7 @@ export function HeadToHeadCard({
   onToggle: () => void;
   featured?: boolean;
 }) {
+  const t = useT();
   const [side, setSide] = useState<"home" | "away">("home");
 
   return (
@@ -203,7 +213,7 @@ export function HeadToHeadCard({
             {fixture.awayGoals}
           </div>
           <p className="label mt-1.5 !text-[9px]">
-            {fixture.settled ? "finale" : "in corso"}
+            {fixture.settled ? t("h2h.final") : t("h2h.inProgress")}
           </p>
         </div>
 
@@ -220,7 +230,7 @@ export function HeadToHeadCard({
         onClick={onToggle}
         className="tap label w-full border-t border-[var(--line)] py-3 transition-colors hover:!text-ink"
       >
-        {expanded ? "Nascondi formazioni" : "Formazioni e sostituzioni"}
+        {expanded ? t("h2h.hideLineups") : t("h2h.showLineups")}
       </button>
 
       {/*

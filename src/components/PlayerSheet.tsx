@@ -1,9 +1,9 @@
 "use client";
 
 import { minuteLabel } from "@/lib/fanta/format";
-import { EVENT_LABEL } from "@/lib/fanta/rules";
 import type { EventKind } from "@/lib/fanta/types";
 import type { BoardPlayer } from "@/lib/api-types";
+import { useT } from "./LocaleProvider";
 import { formatPoints, Role, Sheet } from "./ui";
 
 /** Full bonus/malus breakdown for one player. */
@@ -14,6 +14,7 @@ export function PlayerSheet({
   player: BoardPlayer | null;
   onClose: () => void;
 }) {
+  const t = useT();
   return (
     <Sheet
       open={!!player}
@@ -37,12 +38,12 @@ export function PlayerSheet({
           <div className="grid grid-cols-3 gap-3 border-y border-[var(--line)] py-4">
             {[
               {
-                label: "Voto",
+                label: t("player.grade"),
                 value: player.grade != null ? formatPoints(player.grade) : "s.v.",
                 tone: "text-ink",
               },
               {
-                label: "Bonus / malus",
+                label: t("player.bonusMalus"),
                 value:
                   player.bonus === 0
                     ? "—"
@@ -55,7 +56,7 @@ export function PlayerSheet({
                       : "text-faint",
               },
               {
-                label: "Fantavoto",
+                label: t("player.fantavoto"),
                 value:
                   player.fantavoto != null
                     ? formatPoints(player.fantavoto)
@@ -82,7 +83,7 @@ export function PlayerSheet({
                   className="flex items-center justify-between border-b border-[var(--line-soft)] py-2.5"
                 >
                   <span className="text-[14px]">
-                    {EVENT_LABEL[item.kind as EventKind] ?? item.kind}
+                    {t(`event.${item.kind as EventKind}`)}
                     {item.count > 1 ? (
                       <span className="text-faint"> ×{item.count}</span>
                     ) : null}
@@ -100,13 +101,13 @@ export function PlayerSheet({
             </div>
           ) : (
             <p className="py-6 text-center text-[13px] text-faint">
-              Nessun bonus o malus.
+              {t("player.noBonus")}
             </p>
           )}
 
           {player.events.length ? (
             <div className="pb-4 pt-2">
-              <p className="label pb-2">Cronologia</p>
+              <p className="label pb-2">{t("player.timeline")}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1.5">
                 {player.events.map((event, i) => (
                   <span
@@ -116,7 +117,7 @@ export function PlayerSheet({
                     <span className="num text-faint">
                       {minuteLabel(event.minute)}
                     </span>{" "}
-                    {EVENT_LABEL[event.kind]}
+                    {t(`event.${event.kind}`)}
                   </span>
                 ))}
               </div>
@@ -125,7 +126,7 @@ export function PlayerSheet({
 
           {!player.hasVote && player.matchState === "pre-match" ? (
             <p className="pb-4 text-[12px] text-faint">
-              Probabilità di partire titolare: {player.startProbability}%.
+              {t("player.startChance", { n: player.startProbability })}
             </p>
           ) : null}
         </div>

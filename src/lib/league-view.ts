@@ -142,10 +142,11 @@ function serializeSlot(slot: SlotResult): SerializedSlot {
     substitution: slot.substitute
       ? {
           outName: slot.starter.player.name,
+          // A key, not a sentence: the client renders it in its own language.
           outReason:
             slot.starter.player.matchState === "pre-match"
-              ? "non ancora in campo"
-              : "senza voto",
+              ? "h2h.reasonNotPlayed"
+              : "h2h.reasonNoVote",
           inName: slot.substitute.player.name,
           inFantavoto: slot.substitute.fantavoto,
         }

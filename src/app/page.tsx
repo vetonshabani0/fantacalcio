@@ -1,30 +1,34 @@
+"use client";
+
 import Link from "next/link";
 import { HomeLive } from "@/components/HomeLive";
+import { useT } from "@/components/LocaleProvider";
 import { RealEntry } from "@/components/RealEntry";
 import { Reveal } from "@/components/ui";
 
 export default function HomePage() {
+  const t = useT();
+
   return (
     <>
       <section className="gutter pt-12 md:pt-20">
         <Reveal>
-          <p className="label">Serie A · in diretta</p>
+          <p className="label">{t("home.eyebrow")}</p>
         </Reveal>
 
         <Reveal delay={0.06}>
           <h1 className="display mt-5 text-[clamp(46px,14vw,132px)]">
-            La tua lega,
+            {t("home.title1")}
             <br />
-            <span className="text-acid">davvero</span>
+            <span className="text-acid">{t("home.title2")}</span>
             <br />
-            in diretta.
+            {t("home.title3")}
           </h1>
         </Reveal>
 
         <Reveal delay={0.12}>
           <p className="mt-7 max-w-[46ch] text-[15px] leading-relaxed text-mute md:text-[17px]">
-            Accedi con il tuo account Fantacalcio, scegli la tua lega e guarda
-            classifica, scontro diretto e sostituzioni muoversi mentre si gioca.
+            {t("home.lead")}
           </p>
         </Reveal>
 
@@ -42,13 +46,9 @@ export default function HomePage() {
       <section className="gutter pt-16">
         <div className="border-t border-[var(--line)] pt-6">
           <p className="text-[12px] leading-relaxed text-faint">
-            Le leghe si leggono dai backend ufficiali di Leghe Fantacalcio, che
-            richiedono l&apos;accesso: non esiste alcun endpoint pubblico per
-            cercare o leggere una lega, nemmeno per le leghe pubbliche. I voti e
-            i risultati di Serie A arrivano invece dal feed pubblico usato dal
-            sito ufficiale.{" "}
+            {t("home.footnote")}{" "}
             <Link href="/live" className="link-underline text-mute">
-              Vedi la diretta
+              {t("home.seeLive")}
             </Link>
             .
           </p>

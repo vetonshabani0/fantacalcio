@@ -1,6 +1,7 @@
 "use client";
 
 import type { SerializedSide, SerializedSlot } from "@/lib/league-view";
+import { useT } from "./LocaleProvider";
 import { formatPoints } from "./ui";
 
 /**
@@ -82,6 +83,7 @@ function Shirt({ slot, index }: { slot: SerializedSlot; index: number }) {
 }
 
 export function Pitch({ side }: { side: SerializedSide }) {
+  const t = useT();
   const rows = rowsFor(side);
   let index = 0;
 
@@ -115,9 +117,9 @@ export function Pitch({ side }: { side: SerializedSide }) {
       <div className="flex items-center justify-between border-t border-[var(--line)] px-3 py-2">
         <span className="label">{side.formation}</span>
         <span className="label">
-          {side.ratedSlots}/11 votati
+          {t("h2h.rated", { n: side.ratedSlots })}
           {side.substitutionsUsed > 0
-            ? ` · ${side.substitutionsUsed} sost.`
+            ? ` · ${t("h2h.subsUsed", { n: side.substitutionsUsed })}`
             : ""}
         </span>
       </div>

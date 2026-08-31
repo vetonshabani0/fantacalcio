@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
+import { useT } from "./LocaleProvider";
 import { Empty, Loading, LivePip, Reveal, Section, Ticker } from "./ui";
 
 interface Standing {
@@ -34,6 +35,7 @@ interface RealLeague {
 
 export function RealLeagueView({ alias }: { alias: string }) {
   const { tick, connected } = useLiveVersion();
+  const t = useT();
   const [competition, setCompetition] = useState<number | null>(null);
 
   const url = useMemo(
@@ -52,20 +54,20 @@ export function RealLeagueView({ alias }: { alias: string }) {
       <section className="gutter pt-16">
         <p className="label">Errore</p>
         <h1 className="display mt-3 text-[clamp(32px,9vw,64px)]">
-          {needsAuth ? "Sessione scaduta" : "Non riesco a leggere la lega"}
+          {needsAuth ? t("real.sessionExpired") : t("real.errorTitle")}
         </h1>
         <p className="mt-4 max-w-[42ch] text-[15px] text-mute">{error}</p>
         <Link
           href="/"
           className="tap mt-7 inline-block rounded-full bg-acid px-5 py-2.5 text-[14px] font-bold text-ground"
         >
-          {needsAuth ? "Accedi di nuovo" : "Torna alle tue leghe"}
+          {needsAuth ? t("real.signInAgain") : t("real.backToLeagues")}
         </Link>
       </section>
     );
   }
 
-  if (loading && !data) return <Loading label="Leggo la lega" />;
+  if (loading && !data) return <Loading label={t("real.loading")} />;
   if (!data) return null;
 
   return (
@@ -74,7 +76,7 @@ export function RealLeagueView({ alias }: { alias: string }) {
         <Reveal>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="label">Lega reale · {data.league.alias}</p>
+              <p className="label">{t("real.eyebrow", { alias: data.league.alias })}</p>
               <h1 className="display mt-3 text-[clamp(32px,9vw,72px)]">
                 {data.league.name}
               </h1>
@@ -82,15 +84,19 @@ export function RealLeagueView({ alias }: { alias: string }) {
             <div className="flex shrink-0 flex-col items-end gap-2 pt-1">
               {data.live ? <LivePip label="Live" /> : null}
               <span className="label !text-[9px]">
-                {connected ? "in ascolto" : "riconnessione"}
+                {connected ? t("live.listening") : t("live.reconnecting")}
               </span>
             </div>
           </div>
 
           <p className="mt-4 text-[12px] text-faint">
-            Giornata {data.matchweek}
-            {data.realMatchweek ? ` · Serie A ${data.realMatchweek}` : ""}
-            {data.standings.length ? ` · ${data.standings.length} squadre` : ""}
+            {t("real.matchweek", { n: data.matchweek })}
+            {data.realMatchweek
+              ? ` · ${t("real.serieA", { n: data.realMatchweek })}`
+              : ""}
+            {data.standings.length
+              ? ` · ${t("real.teams", { n: data.standings.length })}`
+              : ""}
           </p>
 
           {data.competitions.length > 1 ? (
@@ -114,19 +120,17 @@ export function RealLeagueView({ alias }: { alias: string }) {
       </section>
 
       <section className="pt-10">
-        <Section title="Classifica" hint="Dati ufficiali della tua lega" />
+        <Section title={t("real.standings")} hint={t("real.standingsHint")} />
         <div className="gutter mt-5">
           {data.standings.length === 0 ? (
-            <Empty>
-              La lega non ha ancora una classifica per questa competizione.
-            </Empty>
+            <Empty>{t("real.noStandings")}</Empty>
           ) : (
             <>
               <div className="flex items-center gap-3 border-b border-[var(--line)] pb-1.5">
                 <span className="label w-5 text-right">#</span>
-                <span className="label flex-1">Squadra</span>
-                <span className="label w-14 text-right">Fantapunti</span>
-                <span className="label w-8 text-right">Pt</span>
+                <span className="label flex-1">{t("real.team")}</span>
+                <span className="label w-14 text-right">{t("real.fantapoints")}</span>
+                <span className="label w-8 text-right">{t("real.points")}</span>
               </div>
               {data.standings.map((row, i) => (
                 <div

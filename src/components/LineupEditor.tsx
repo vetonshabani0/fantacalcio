@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { parseFormation } from "@/lib/fanta/rules";
 import type { Role as RoleKey } from "@/lib/fanta/types";
+import { useT } from "./LocaleProvider";
 import { formatPoints, Loading, Role, Sheet } from "./ui";
 
 interface RosterPlayer {
@@ -44,6 +45,7 @@ export function LineupEditor({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const t = useT();
   const [payload, setPayload] = useState<Payload | null>(null);
   const [formation, setFormation] = useState("");
   const [starters, setStarters] = useState<number[]>([]);
@@ -125,7 +127,7 @@ export function LineupEditor({
       });
       const body = await res.json();
       if (!res.ok) {
-        setError(body?.error ?? "Salvataggio non riuscito");
+        setError(body?.error ?? t("lineup.saveFailed"));
         return;
       }
       onSaved();
@@ -169,10 +171,10 @@ export function LineupEditor({
           <span className="block truncate text-[10.5px] text-faint">
             {player.teamName} ·{" "}
             {player.hasVote
-              ? `voto ${formatPoints(player.grade ?? 0)}`
+              ? t("lineup.gradeIs", { n: formatPoints(player.grade ?? 0) })
               : player.matchState === "pre-match"
-                ? `titolare al ${player.startProbability}%`
-                : "senza voto"}
+                ? t("lineup.startsAt", { n: player.startProbability })
+                : t("lineup.noVote")}
           </span>
         </span>
         <span
@@ -186,14 +188,14 @@ export function LineupEditor({
           <span className="flex shrink-0 flex-col">
             <button
               onClick={() => moveBench(index, -1)}
-              aria-label="Sposta su"
+              aria-label={t("lineup.moveUp")}
               className="h-3.5 px-1 text-[8px] leading-none text-faint hover:text-ink"
             >
               ▲
             </button>
             <button
               onClick={() => moveBench(index, 1)}
-              aria-label="Sposta giù"
+              aria-label={t("lineup.moveDown")}
               className="h-3.5 px-1 text-[8px] leading-none text-faint hover:text-ink"
             >
               ▼
@@ -204,7 +206,7 @@ export function LineupEditor({
           onClick={() => (action === "bench" ? toBench(id) : toStarter(id))}
           className="tap label shrink-0 rounded-full border border-[var(--line)] px-2 py-1 !text-[9px] hover:!text-ink"
         >
-          {action === "bench" ? "Panca" : "Titolare"}
+          {action === "bench" ? t("lineup.toBench") : t("lineup.toStart")}
         </button>
       </div>
     );
@@ -216,7 +218,7 @@ export function LineupEditor({
       onClose={onClose}
       title={
         <div className="min-w-0">
-          <p className="label">Formazione · giornata {matchweek}</p>
+          <p className="label">{t("lineup.title", { n: matchweek })}</p>
           <h3 className="display-tight mt-1 truncate text-[22px]">
             {payload?.teamName ?? "…"}
           </h3>
@@ -234,13 +236,12 @@ export function LineupEditor({
       ) : (
         <div className="px-5">
           <p className="border-y border-[var(--line)] py-3 text-[12px] leading-relaxed text-mute">
-            L&apos;ordine della panchina decide chi entra al posto di chi resta
-            senza voto.
+            {t("lineup.benchNote")}
           </p>
 
           <div className="flex flex-wrap items-center gap-3 py-3">
             <label className="flex items-center gap-2">
-              <span className="label">Modulo</span>
+              <span className="label">{t("lineup.formation")}</span>
               <select
                 value={formation}
                 onChange={(e) => setFormation(e.target.value)}
@@ -270,13 +271,13 @@ export function LineupEditor({
           </div>
 
           <p className="label border-t border-[var(--line)] pb-1.5 pt-4">
-            Titolari · {starters.length}/11
+            {t("lineup.starters", { n: starters.length })}
           </p>
           {sorted(starters).map((id) => (
             <Line key={id} id={id} action="bench" />
           ))}
 
-          <p className="label pb-1.5 pt-6">Panchina · ordine di ingresso</p>
+          <p className="label pb-1.5 pt-6">{t("lineup.bench")}</p>
           {bench.map((id, index) => (
             <Line key={id} id={id} action="start" index={index} />
           ))}
@@ -287,14 +288,14 @@ export function LineupEditor({
 
           <div className="sticky bottom-0 -mx-5 mt-5 flex items-center justify-between gap-4 border-t border-[var(--line)] bg-ground-2/95 px-5 py-4 backdrop-blur">
             <span className="text-[12px] text-faint">
-              {valid ? "Formazione valida" : "Completa il modulo"}
+              {valid ? t("lineup.valid") : t("lineup.invalid")}
             </span>
             <button
               onClick={save}
               disabled={!valid || saving}
               className="tap rounded-full bg-acid px-5 py-2.5 text-[13px] font-bold text-ground disabled:opacity-30"
             >
-              {saving ? "Salvo…" : "Salva"}
+              {saving ? t("lineup.saving") : t("lineup.save")}
             </button>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { BoardPlayer } from "@/lib/api-types";
 import type { RealMatch } from "@/lib/fanta/types";
 import { PlayerRow, PlayerRowHeader } from "./PlayerRow";
+import { useT } from "./LocaleProvider";
 import { Empty, Role, Segmented } from "./ui";
 
 const ROLE_ORDER: Record<string, number> = { P: 0, D: 1, C: 2, A: 3 };
@@ -35,6 +36,7 @@ function Probable({
   players: BoardPlayer[];
   onSelect: (player: BoardPlayer) => void;
 }) {
+  const t = useT();
   const ranked = [...players].sort(
     (a, b) =>
       b.startProbability - a.startProbability ||
@@ -42,13 +44,13 @@ function Probable({
   );
 
   if (ranked.length === 0) {
-    return <Empty>Lista convocati non ancora pubblicata.</Empty>;
+    return <Empty>{t("squad.noCallups")}</Empty>;
   }
 
   return (
     <div>
       <p className="label border-b border-[var(--line)] pb-1.5">
-        Probabile formazione
+        {t("squad.probableLineup")}
       </p>
       {ranked.map((player) => (
         <button
@@ -92,6 +94,7 @@ function Squad({
   players: BoardPlayer[];
   onSelect: (player: BoardPlayer) => void;
 }) {
+  const t = useT();
   const [showUnused, setShowUnused] = useState(false);
   const incomingFor = new Map<number, BoardPlayer>();
   const byId = new Map(players.map((p) => [p.id, p]));
@@ -107,7 +110,7 @@ function Squad({
   const xi = started.filter((p) => !unused.includes(p));
 
   if (xi.length === 0 && camein.length === 0) {
-    return <Empty>Formazione non ancora disponibile.</Empty>;
+    return <Empty>{t("squad.lineupPending")}</Empty>;
   }
 
   return (
@@ -124,7 +127,7 @@ function Squad({
 
       {camein.length ? (
         <>
-          <GroupLabel>Subentrati</GroupLabel>
+          <GroupLabel>{t("squad.subbedOn")}</GroupLabel>
           {camein.map((player) => (
             <PlayerRow
               key={player.id}
@@ -146,8 +149,8 @@ function Squad({
             onClick={() => setShowUnused((v) => !v)}
             className="tap label flex w-full items-center justify-between border-b border-[var(--line)] pb-1.5 pt-6 hover:!text-ink"
           >
-            <span>Non utilizzati · {unused.length}</span>
-            <span>{showUnused ? "nascondi" : "mostra"}</span>
+            <span>{t("squad.unused", { n: unused.length })}</span>
+            <span>{showUnused ? t("squad.hide") : t("squad.show")}</span>
           </button>
           {showUnused
             ? unused.map((player) => (

@@ -8,6 +8,7 @@ import {
   useTransform,
 } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useT } from "./LocaleProvider";
 
 /* ---------------------------------------------------------------- numbers */
 
@@ -101,19 +102,22 @@ export function Role({ role }: { role: string }) {
   );
 }
 
+const MATCH_STATE = {
+  "pre-match": { key: "match.pre", tone: "!text-faint" },
+  live: { key: "match.live", tone: "!text-flare" },
+  finished: { key: "match.finished", tone: "!text-mute" },
+  suspended: { key: "match.suspended", tone: "!text-gold" },
+  postponed: { key: "match.postponed", tone: "!text-gold" },
+} as const;
+
 export function MatchState({ state }: { state: string }) {
-  const map: Record<string, { text: string; tone: string }> = {
-    "pre-match": { text: "Da giocare", tone: "!text-faint" },
-    live: { text: "Live", tone: "!text-flare" },
-    finished: { text: "Finita", tone: "!text-mute" },
-    suspended: { text: "Sospesa", tone: "!text-gold" },
-    postponed: { text: "Rinviata", tone: "!text-gold" },
-  };
-  const entry = map[state] ?? map["pre-match"];
+  const t = useT();
+  const entry =
+    MATCH_STATE[state as keyof typeof MATCH_STATE] ?? MATCH_STATE["pre-match"];
   return (
     <span className="inline-flex items-center gap-1.5">
       {state === "live" ? <span className="pip" /> : null}
-      <span className={`label ${entry.tone}`}>{entry.text}</span>
+      <span className={`label ${entry.tone}`}>{t(entry.key)}</span>
     </span>
   );
 }

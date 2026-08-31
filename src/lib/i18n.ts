@@ -1,0 +1,507 @@
+/**
+ * Translations.
+ *
+ * A flat key map rather than nested objects: it keeps `t("live.title")` calls
+ * short at the call site, and `satisfies` below makes TypeScript reject any
+ * language that is missing a key or invents one, so the two dictionaries cannot
+ * silently drift apart.
+ */
+
+export const LOCALES = ["it", "en"] as const;
+export type Locale = (typeof LOCALES)[number];
+
+export const LOCALE_LABEL: Record<Locale, string> = {
+  it: "IT",
+  en: "EN",
+};
+
+const it = {
+  // -------------------------------------------------------------- chrome
+  "nav.home": "Home",
+  "nav.live": "Diretta",
+  "nav.leagues": "Le mie leghe",
+  "nav.createLeague": "Crea lega",
+  "nav.language": "Lingua",
+
+  // ---------------------------------------------------------------- home
+  "home.eyebrow": "Serie A · in diretta",
+  "home.title1": "La tua lega,",
+  "home.title2": "davvero",
+  "home.title3": "in diretta.",
+  "home.lead":
+    "Accedi con il tuo account Fantacalcio, scegli la tua lega e guarda classifica, scontro diretto e sostituzioni muoversi mentre si gioca.",
+  "home.footnote":
+    "Le leghe si leggono dai backend ufficiali di Leghe Fantacalcio, che richiedono l'accesso: non esiste alcun endpoint pubblico per cercare o leggere una lega, nemmeno per le leghe pubbliche. I voti e i risultati di Serie A arrivano invece dal feed pubblico usato dal sito ufficiale.",
+  "home.seeLive": "Vedi la diretta",
+  "home.staticTitle1": "Il fanta,",
+  "home.staticTitle2": "minuto",
+  "home.staticTitle3": "per minuto.",
+  "home.staticLead":
+    "Voti, bonus e malus, sostituzioni e risultati della Serie A in tempo reale, letti dal feed pubblico di Leghe Fantacalcio e calcolati direttamente nel browser.",
+  "home.staticCta": "Vai alla diretta →",
+  "home.staticNote":
+    "Questa è la versione statica. Le funzioni sulla tua lega reale — accesso con il tuo account Fantacalcio, classifica, scontro diretto e sostituzioni — richiedono un server, perché i backend ufficiali rifiutano le chiamate anonime e non permettono richieste da altri domini. Il codice completo è su",
+  "home.staticNoteEnd": ": eseguilo con",
+  "home.staticNoteEnd2": "per avere tutto.",
+
+  // ---------------------------------------------------------------- live
+  "live.season": "Serie A · stagione {n}",
+  "live.matchweek": "Giornata {n}",
+  "live.listening": "in ascolto",
+  "live.reconnecting": "riconnessione",
+  "live.loading": "Carico i voti",
+  "live.loadError": "Impossibile caricare il feed: {msg}",
+  "live.lineupsVs": "{a} contro {b}",
+  "live.lineupsPending": "Formazioni non ancora ufficiali",
+  "live.movers": "Migliori e peggiori",
+  "live.moversHint": "Fantavoto con bonus e malus",
+  "live.best": "Migliori",
+  "live.worst": "Peggiori",
+  "live.noVotesYet": "Nessun voto ancora.",
+  "live.changes": "Cambi",
+  "live.changesHint": "{n} sostituzioni in giornata",
+  "live.noChanges": "Nessuna sostituzione ancora.",
+  "live.realResults": "I risultati reali che alimentano il calcolo della tua lega",
+  "live.allVotes": "Tutti i voti →",
+
+  // -------------------------------------------------------------- squads
+  "squad.player": "Giocatore",
+  "squad.grade": "Voto",
+  "squad.fanta": "Fanta",
+  "squad.probableLineup": "Probabile formazione",
+  "squad.noCallups": "Lista convocati non ancora pubblicata.",
+  "squad.lineupPending": "Formazione non ancora disponibile.",
+  "squad.subbedOn": "Subentrati",
+  "squad.unused": "Non utilizzati · {n}",
+  "squad.show": "mostra",
+  "squad.hide": "nascondi",
+
+  // -------------------------------------------------------- player sheet
+  "player.grade": "Voto",
+  "player.bonusMalus": "Bonus / malus",
+  "player.fantavoto": "Fantavoto",
+  "player.noBonus": "Nessun bonus o malus.",
+  "player.timeline": "Cronologia",
+  "player.startChance": "Probabilità di partire titolare: {n}%.",
+
+  // -------------------------------------------------------- match states
+  "match.pre": "Da giocare",
+  "match.live": "Live",
+  "match.finished": "Finita",
+  "match.suspended": "Sospesa",
+  "match.postponed": "Rinviata",
+
+  // ---------------------------------------------------------- sign in
+  "auth.username": "Username o email Fantacalcio",
+  "auth.password": "Password",
+  "auth.show": "mostra",
+  "auth.hide": "nascondi",
+  "auth.submit": "Accedi e vedi le tue leghe",
+  "auth.submitting": "Accesso in corso…",
+  "auth.failed": "Accesso non riuscito.",
+  "auth.unreachable": "Impossibile contattare il server.",
+  "auth.privacy":
+    "Le credenziali vengono inoltrate una sola volta al login ufficiale di Leghe Fantacalcio da questo server. La password non viene salvata da nessuna parte: resta solo la sessione cifrata in un cookie httpOnly.",
+
+  // ------------------------------------------------------- league picker
+  "picker.count_one": "{n} lega · {user}",
+  "picker.count_other": "{n} leghe · {user}",
+  "picker.signOut": "Esci",
+  "picker.diagnostics": "Diagnostica",
+  "picker.diagnosticsTitle":
+    "Mostra i dati grezzi che il server ufficiale restituisce per la tua lega",
+  "picker.search": "Cerca fra le tue leghe",
+  "picker.noMatch": "Nessuna delle tue leghe si chiama così.",
+  "picker.admin": "admin",
+  "picker.title": "Le tue leghe reali",
+  "picker.eyebrow": "Le mie leghe",
+
+  // -------------------------------------------------------- real league
+  "real.eyebrow": "Lega reale · {alias}",
+  "real.matchweek": "Giornata {n}",
+  "real.serieA": "Serie A {n}",
+  "real.teams": "{n} squadre",
+  "real.standings": "Classifica",
+  "real.standingsHint": "Dati ufficiali della tua lega",
+  "real.noStandings":
+    "La lega non ha ancora una classifica per questa competizione.",
+  "real.loading": "Leggo la lega",
+  "real.errorTitle": "Non riesco a leggere la lega",
+  "real.sessionExpired": "Sessione scaduta",
+  "real.signInAgain": "Accedi di nuovo",
+  "real.backToLeagues": "Torna alle tue leghe",
+  "real.team": "Squadra",
+  "real.points": "Pt",
+  "real.fantapoints": "Fantapunti",
+
+  // ----------------------------------------------------------- standings
+  "table.team": "Squadra",
+  "table.points": "Pt",
+  "table.live": "Live",
+
+  // ------------------------------------------------------------- errors
+  "error.notFound": "Pagina non trovata",
+  "error.notFoundBody":
+    "Il codice lega potrebbe essere sbagliato, oppure la lega è stata rimossa.",
+  "error.home": "Torna alla home",
+
+  // ------------------------------------------------------------- events
+  "event.scoredGoals": "Gol",
+  "event.scoredPenalties": "Rigore segnato",
+  "event.missedPenalties": "Rigore sbagliato",
+  "event.savedPenalties": "Rigore parato",
+  "event.concededGoals": "Gol subito",
+  "event.ownGoals": "Autogol",
+  "event.assists": "Assist",
+  "event.softAssists": "Assist da fermo",
+  "event.goldAssists": "Assist d'oro",
+  "event.yellowCards": "Ammonizione",
+  "event.redCards": "Espulsione",
+  "event.cleanSheets": "Porta inviolata",
+  "event.decisiveGoals": "Gol decisivo",
+  "event.equalisingGoals": "Gol del pareggio",
+  "event.goalContributions": "Partecipazione al gol",
+  "event.manOfTheMatch": "Migliore in campo",
+  "event.subbedOut": "Sostituito",
+  "event.subbedIn": "Subentrato",
+  "event.varDisallowedGoals": "Gol annullato dal VAR",
+  "event.injuries": "Infortunio",
+  // -------------------------------------------------------- head to head
+  "h2h.sumOfScores": "Somma fantavoti",
+  "h2h.defenceModifier": "Modificatore difesa · media {n}",
+  "h2h.bench": "Panchina",
+  "h2h.showLineups": "Formazioni e sostituzioni",
+  "h2h.hideLineups": "Nascondi formazioni",
+  "h2h.inProgress": "in corso",
+  "h2h.final": "finale",
+  "h2h.toNextGoal": "{n} al gol",
+  "h2h.goalReached": "gol raggiunto",
+  "h2h.noSubstitute": "Senza voto, nessun sostituto disponibile",
+  "h2h.rated": "{n}/11 votati",
+  "h2h.subsUsed": "{n} sost.",
+  "h2h.reasonNoVote": "senza voto",
+  "h2h.reasonNotPlayed": "non ancora in campo",
+
+  // ------------------------------------------------------ league board
+  "league.fixtures": "Sfide",
+  "league.table": "Classifica",
+  "league.myTeam": "La tua squadra",
+  "league.position": "Posizione",
+  "league.points": "Punti",
+  "league.live": "Live",
+  "league.lineup": "Formazione",
+  "league.against": "Contro",
+  "league.ahead": "avanti di {n}",
+  "league.behind": "sotto di {n}",
+  "league.level": "in parità",
+  "league.matchweekShort": "G{n}",
+  "league.prevMatchweek": "Giornata precedente",
+  "league.nextMatchweek": "Giornata successiva",
+  "league.loading": "Calcolo la lega",
+  "league.fixtureCount": "{n} scontri diretti",
+  "league.noFixtures": "Nessuna sfida in calendario.",
+  "league.settled": "Giornata conclusa",
+  "league.liveHint": "Live è il punteggio in corso · tocca una squadra per seguirla",
+  "league.meta": "{teams} squadre · giornata Serie A {mw} · gol a quota {first}, poi ogni {step}",
+  // ------------------------------------------------------- league builder
+  "build.eyebrow": "Nuova lega",
+  "build.title": "Costruisci la tua lega",
+  "build.lead":
+    "Crea le squadre e assegna le rose con i giocatori reali della Serie A. Da lì in poi classifica, sfide e sostituzioni si aggiornano da sole.",
+  "build.demo": "Oppure parti da una lega dimostrativa →",
+  "build.demoBusy": "Sorteggio rose…",
+  "build.leagueName": "Nome della lega",
+  "build.leagueNamePlaceholder": "Es. Lega degli Amici",
+  "build.teams": "Squadre",
+  "build.teamsHint": "Almeno due. Il calendario è andata e ritorno.",
+  "build.addTeam": "+ Squadra",
+  "build.fillRosters": "Completa rose",
+  "build.removeTeam": "Rimuovi",
+  "build.teamName": "Nome squadra",
+  "build.teamPlaceholder": "Squadra {n}",
+  "build.managerName": "Nome del manager",
+  "build.managerPlaceholder": "Come ti cercheranno",
+  "build.roster": "Rosa",
+  "build.rosterHint": "Un giocatore può stare in una sola squadra",
+  "build.searchPlayer": "Cerca giocatore o club",
+  "build.loadingPlayers": "Carico i giocatori",
+  "build.submit": "Crea lega",
+  "build.submitting": "Creo…",
+  "build.shareNote": "Riceverai un codice da condividere",
+  "build.needName": "Dai un nome alla lega.",
+  "build.needPlayers":
+    "\"{team}\" ha {n} giocatori: ne servono almeno 11.",
+  "build.createFailed": "Creazione non riuscita.",
+  "build.loadPlayersFailed": "Impossibile caricare la lista giocatori.",
+
+  // -------------------------------------------------------- lineup editor
+  "lineup.title": "Formazione · giornata {n}",
+  "lineup.benchNote":
+    "L'ordine della panchina decide chi entra al posto di chi resta senza voto.",
+  "lineup.formation": "Modulo",
+  "lineup.starters": "Titolari · {n}/11",
+  "lineup.bench": "Panchina · ordine di ingresso",
+  "lineup.toBench": "Panca",
+  "lineup.toStart": "Titolare",
+  "lineup.moveUp": "Sposta su",
+  "lineup.moveDown": "Sposta giù",
+  "lineup.valid": "Formazione valida",
+  "lineup.invalid": "Completa il modulo",
+  "lineup.save": "Salva",
+  "lineup.saving": "Salvo…",
+  "lineup.saveFailed": "Salvataggio non riuscito",
+  "lineup.gradeIs": "voto {n}",
+  "lineup.startsAt": "titolare al {n}%",
+  "lineup.noVote": "senza voto",
+} as const;
+
+export type TranslationKey = keyof typeof it;
+
+const en: Record<TranslationKey, string> = {
+  "nav.home": "Home",
+  "nav.live": "Live",
+  "nav.leagues": "My leagues",
+  "nav.createLeague": "Create league",
+  "nav.language": "Language",
+
+  "home.eyebrow": "Serie A · live",
+  "home.title1": "Your league,",
+  "home.title2": "actually",
+  "home.title3": "live.",
+  "home.lead":
+    "Sign in with your Fantacalcio account, pick your league, and watch the table, the head-to-head and the substitutions move while the matches are being played.",
+  "home.footnote":
+    "Leagues are read from the official Leghe Fantacalcio backends, which require signing in: there is no public endpoint to search or read a league, not even a public one. Serie A ratings and results come instead from the public feed the official site itself uses.",
+  "home.seeLive": "See it live",
+  "home.staticTitle1": "Fantasy,",
+  "home.staticTitle2": "minute",
+  "home.staticTitle3": "by minute.",
+  "home.staticLead":
+    "Serie A ratings, bonuses and maluses, substitutions and scores in real time, read from the public Leghe Fantacalcio feed and computed right in your browser.",
+  "home.staticCta": "Go to the live board →",
+  "home.staticNote":
+    "This is the static version. Everything about your real league — signing in with your Fantacalcio account, the table, the head-to-head and the substitutions — needs a server, because the official backends reject anonymous calls and refuse requests from other domains. The full code is on",
+  "home.staticNoteEnd": ": run it with",
+  "home.staticNoteEnd2": "to get everything.",
+
+  "live.season": "Serie A · season {n}",
+  "live.matchweek": "Matchweek {n}",
+  "live.listening": "listening",
+  "live.reconnecting": "reconnecting",
+  "live.loading": "Loading ratings",
+  "live.loadError": "Could not load the feed: {msg}",
+  "live.lineupsVs": "{a} against {b}",
+  "live.lineupsPending": "Lineups not confirmed yet",
+  "live.movers": "Best and worst",
+  "live.moversHint": "Fantasy score with bonuses and maluses applied",
+  "live.best": "Best",
+  "live.worst": "Worst",
+  "live.noVotesYet": "No ratings yet.",
+  "live.changes": "Substitutions",
+  "live.changesHint": "{n} substitutions this matchweek",
+  "live.noChanges": "No substitutions yet.",
+  "live.realResults": "The real results that drive your league's scoring",
+  "live.allVotes": "All ratings →",
+
+  "squad.player": "Player",
+  "squad.grade": "Rating",
+  "squad.fanta": "Fantasy",
+  "squad.probableLineup": "Probable lineup",
+  "squad.noCallups": "Squad list not published yet.",
+  "squad.lineupPending": "Lineup not available yet.",
+  "squad.subbedOn": "Came on",
+  "squad.unused": "Unused · {n}",
+  "squad.show": "show",
+  "squad.hide": "hide",
+
+  "player.grade": "Rating",
+  "player.bonusMalus": "Bonus / malus",
+  "player.fantavoto": "Fantasy score",
+  "player.noBonus": "No bonuses or maluses.",
+  "player.timeline": "Timeline",
+  "player.startChance": "Chance of starting: {n}%.",
+
+  "match.pre": "Upcoming",
+  "match.live": "Live",
+  "match.finished": "Finished",
+  "match.suspended": "Suspended",
+  "match.postponed": "Postponed",
+
+  "auth.username": "Fantacalcio username or email",
+  "auth.password": "Password",
+  "auth.show": "show",
+  "auth.hide": "hide",
+  "auth.submit": "Sign in and see your leagues",
+  "auth.submitting": "Signing in…",
+  "auth.failed": "Sign-in failed.",
+  "auth.unreachable": "Could not reach the server.",
+  "auth.privacy":
+    "Your credentials are forwarded once to the official Leghe Fantacalcio login by this server. The password is never stored anywhere: all that is kept is the encrypted session, in an httpOnly cookie.",
+
+  "picker.count_one": "{n} league · {user}",
+  "picker.count_other": "{n} leagues · {user}",
+  "picker.signOut": "Sign out",
+  "picker.diagnostics": "Diagnostics",
+  "picker.diagnosticsTitle":
+    "Show the raw data the official server returns for your league",
+  "picker.search": "Search your leagues",
+  "picker.noMatch": "None of your leagues is called that.",
+  "picker.admin": "admin",
+  "picker.title": "Your real leagues",
+  "picker.eyebrow": "My leagues",
+
+  "real.eyebrow": "Real league · {alias}",
+  "real.matchweek": "Matchweek {n}",
+  "real.serieA": "Serie A {n}",
+  "real.teams": "{n} teams",
+  "real.standings": "Table",
+  "real.standingsHint": "Official data from your league",
+  "real.noStandings": "This league has no table for this competition yet.",
+  "real.loading": "Reading the league",
+  "real.errorTitle": "I can't read this league",
+  "real.sessionExpired": "Session expired",
+  "real.signInAgain": "Sign in again",
+  "real.backToLeagues": "Back to your leagues",
+  "real.team": "Team",
+  "real.points": "Pts",
+  "real.fantapoints": "Fantasy pts",
+
+  "table.team": "Team",
+  "table.points": "Pts",
+  "table.live": "Live",
+
+  "error.notFound": "Page not found",
+  "error.notFoundBody":
+    "The league code may be wrong, or the league may have been removed.",
+  "error.home": "Back to home",
+
+  "event.scoredGoals": "Goal",
+  "event.scoredPenalties": "Penalty scored",
+  "event.missedPenalties": "Penalty missed",
+  "event.savedPenalties": "Penalty saved",
+  "event.concededGoals": "Goal conceded",
+  "event.ownGoals": "Own goal",
+  "event.assists": "Assist",
+  "event.softAssists": "Set-piece assist",
+  "event.goldAssists": "Golden assist",
+  "event.yellowCards": "Yellow card",
+  "event.redCards": "Red card",
+  "event.cleanSheets": "Clean sheet",
+  "event.decisiveGoals": "Decisive goal",
+  "event.equalisingGoals": "Equaliser",
+  "event.goalContributions": "Goal involvement",
+  "event.manOfTheMatch": "Man of the match",
+  "event.subbedOut": "Substituted off",
+  "event.subbedIn": "Substituted on",
+  "event.varDisallowedGoals": "Goal disallowed by VAR",
+  "event.injuries": "Injury",
+  "h2h.sumOfScores": "Sum of fantasy scores",
+  "h2h.defenceModifier": "Defence modifier · average {n}",
+  "h2h.bench": "Bench",
+  "h2h.showLineups": "Lineups and substitutions",
+  "h2h.hideLineups": "Hide lineups",
+  "h2h.inProgress": "in progress",
+  "h2h.final": "final",
+  "h2h.toNextGoal": "{n} to a goal",
+  "h2h.goalReached": "goal reached",
+  "h2h.noSubstitute": "No rating, and no substitute available",
+  "h2h.rated": "{n}/11 rated",
+  "h2h.subsUsed": "{n} subs",
+  "h2h.reasonNoVote": "no rating",
+  "h2h.reasonNotPlayed": "has not played yet",
+
+  "league.fixtures": "Fixtures",
+  "league.table": "Table",
+  "league.myTeam": "Your team",
+  "league.position": "Position",
+  "league.points": "Points",
+  "league.live": "Live",
+  "league.lineup": "Lineup",
+  "league.against": "Against",
+  "league.ahead": "ahead by {n}",
+  "league.behind": "behind by {n}",
+  "league.level": "level",
+  "league.matchweekShort": "MW{n}",
+  "league.prevMatchweek": "Previous matchweek",
+  "league.nextMatchweek": "Next matchweek",
+  "league.loading": "Computing the league",
+  "league.fixtureCount": "{n} head-to-heads",
+  "league.noFixtures": "No fixtures scheduled.",
+  "league.settled": "Matchweek complete",
+  "league.liveHint": "Live is the score right now · tap a team to follow it",
+  "league.meta": "{teams} teams · Serie A matchweek {mw} · goal at {first}, then every {step}",
+  "build.eyebrow": "New league",
+  "build.title": "Build your league",
+  "build.lead":
+    "Create the teams and fill their squads with real Serie A players. From then on the table, fixtures and substitutions update themselves.",
+  "build.demo": "Or start from a demo league →",
+  "build.demoBusy": "Drafting squads…",
+  "build.leagueName": "League name",
+  "build.leagueNamePlaceholder": "e.g. Friends League",
+  "build.teams": "Teams",
+  "build.teamsHint": "At least two. The calendar runs home and away.",
+  "build.addTeam": "+ Team",
+  "build.fillRosters": "Fill squads",
+  "build.removeTeam": "Remove",
+  "build.teamName": "Team name",
+  "build.teamPlaceholder": "Team {n}",
+  "build.managerName": "Manager name",
+  "build.managerPlaceholder": "How others will find you",
+  "build.roster": "Squad",
+  "build.rosterHint": "A player can only belong to one team",
+  "build.searchPlayer": "Search player or club",
+  "build.loadingPlayers": "Loading players",
+  "build.submit": "Create league",
+  "build.submitting": "Creating…",
+  "build.shareNote": "You will get a code to share",
+  "build.needName": "Give the league a name.",
+  "build.needPlayers": "\"{team}\" has {n} players: at least 11 are needed.",
+  "build.createFailed": "Could not create the league.",
+  "build.loadPlayersFailed": "Could not load the player list.",
+
+  "lineup.title": "Lineup · matchweek {n}",
+  "lineup.benchNote":
+    "The bench order decides who comes on for anyone left without a rating.",
+  "lineup.formation": "Formation",
+  "lineup.starters": "Starting XI · {n}/11",
+  "lineup.bench": "Bench · order they come on",
+  "lineup.toBench": "Bench",
+  "lineup.toStart": "Start",
+  "lineup.moveUp": "Move up",
+  "lineup.moveDown": "Move down",
+  "lineup.valid": "Lineup is valid",
+  "lineup.invalid": "Complete the formation",
+  "lineup.save": "Save",
+  "lineup.saving": "Saving…",
+  "lineup.saveFailed": "Could not save",
+  "lineup.gradeIs": "rating {n}",
+  "lineup.startsAt": "starts {n}% of the time",
+  "lineup.noVote": "no rating",
+};
+
+export const DICTIONARIES = { it, en } satisfies Record<
+  Locale,
+  Record<TranslationKey, string>
+>;
+
+/** Replaces `{name}` placeholders. Missing values are left visible on purpose. */
+export function interpolate(
+  template: string,
+  vars?: Record<string, string | number>,
+): string {
+  if (!vars) return template;
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in vars ? String(vars[key]) : match,
+  );
+}
+
+export function detectLocale(): Locale {
+  if (typeof navigator === "undefined") return "it";
+  const preferred = [navigator.language, ...(navigator.languages ?? [])];
+  for (const tag of preferred) {
+    const base = tag.toLowerCase().split("-")[0];
+    if ((LOCALES as readonly string[]).includes(base)) return base as Locale;
+  }
+  // The app is Italian-first; anything unrecognised gets English.
+  return "en";
+}
