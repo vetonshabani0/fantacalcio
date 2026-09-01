@@ -5,34 +5,51 @@ bench substitutions, all recomputed while the Serie A matches are being played.
 
 ## Where the data comes from
 
-There is **no public API for private fantacalcio leagues**. Both of Leghe
-Fantacalcio's own backends are fully authenticated:
+Two sources, both public, neither needing an account.
 
-| Endpoint | Without credentials |
+### Real leagues, without signing in
+
+The authenticated API refuses anonymous callers — `apileague.fantacalcio.it`
+answers `ATH008 Bearer token missing`, and `/servizi/v1_leghe*` answers `AD05` —
+and there is no league-search endpoint anywhere. It is tempting to conclude that
+league data is unreachable without credentials. It is not.
+
+The legacy web pages are still served, and three of them are public:
+
+| Page | What it gives away |
 | --- | --- |
-| `https://apileague.fantacalcio.it/{service}/v1/…` | `401 ATH008 — Bearer token missing` |
-| `https://leghe.fantacalcio.it/servizi/v1_leghe…` | `AD05 — non hai le credenziali` |
+| `/{alias}/squadre` | the entire competition as JSON in a `currentCompetition` config block, **including the full standings** |
+| `/{alias}/info-squadra?t={id}` | one team's name and badge, in OpenGraph meta tags |
+| `/{alias}/classifica` | nothing — it redirects to the login wall |
 
-Their web client authenticates with an `app_key` header plus a per-league bearer
-token obtained from a user login, so league rosters and standings simply are not
-readable without that user's own account.
+So the standings come from the page that appears to be about squads, and the
+team names come one request at a time from the per-team pages, because the
+squads page renders its cards client-side from Handlebars templates and its
+markup carries only ids.
 
-What *is* public is the live match data. Leghe Fantacalcio publishes each
-matchweek to an unauthenticated CloudFront bucket, and its own client polls it
-during matches:
+Leagues are also discoverable by name: `/{alias}/classifica` redirects to
+`/{alias}` for a league that exists and to `/404` for one that does not, which
+makes a credential-free existence check. Aliases are slugs of the league name,
+so slugifying a search term and probing a few common shapes finds a league.
+
+`src/lib/fanta/public-league.ts` implements all of this.
+
+### Live Serie A data
+
+Leghe Fantacalcio publishes each matchweek to an unauthenticated CloudFront
+bucket, and its own client polls it during matches:
 
 ```
 https://d2lhpso9w1g8dk.cloudfront.net/web/risorse/dati/live/{seasonId}/live_{matchweek}.json
 ```
 
-No key, no rate limit, one small JSON per matchweek. It carries, for every Serie
-A player: the match rating, every bonus/malus event with its minute, who came on
-for whom, and the live score and status of all ten fixtures. Season `21` is
-2026/27.
+No key, no rate limit. It carries, for every Serie A player: the match rating,
+every bonus/malus event with its minute, who came on for whom, and the live score
+and status of all ten fixtures. Season `21` is 2026/27. `src/lib/fanta/decode.ts`
+documents the wire format, reverse engineered from the official client bundle.
 
-FantaLive is built on that feed. You bring the league — teams and rosters — and
-everything else is derived live. `src/lib/fanta/decode.ts` documents the wire
-format, which was reverse engineered from the official client bundle.
+Signing in with your own account remains supported, and is the only way to read
+a league that exposes nothing publicly.
 
 ### Feed quirks worth knowing
 

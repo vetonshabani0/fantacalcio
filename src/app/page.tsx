@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { HomeLive } from "@/components/HomeLive";
 import { useT } from "@/components/LocaleProvider";
-import { RealEntry } from "@/components/RealEntry";
+import { PublicSearch } from "@/components/PublicSearch";
 import { Reveal } from "@/components/ui";
 
 export default function HomePage() {
@@ -28,32 +28,32 @@ export default function HomePage() {
 
         <Reveal delay={0.12}>
           <p className="mt-7 max-w-[46ch] text-[15px] leading-relaxed text-mute md:text-[17px]">
-            {t("home.lead")}
+            {t("pub.hint")}
           </p>
         </Reveal>
 
         <Reveal delay={0.18}>
-          <div className="mt-10 max-w-md">
-            <RealEntry />
+          <div className="mt-10 max-w-xl">
+            <PublicSearch />
           </div>
+        </Reveal>
+
+        <Reveal delay={0.24}>
+          <p className="mt-6 text-[13px] text-faint">
+            <Link href="/lega-reale" className="link-underline text-mute">
+              {t("nav.leagues")}
+            </Link>{" "}
+            ·{" "}
+            <Link href="/live" className="link-underline text-mute">
+              {t("home.seeLive")}
+            </Link>
+          </p>
         </Reveal>
       </section>
 
       <div className="pt-16">
         <HomeLive />
       </div>
-
-      <section className="gutter pt-16">
-        <div className="border-t border-[var(--line)] pt-6">
-          <p className="text-[12px] leading-relaxed text-faint">
-            {t("home.footnote")}{" "}
-            <Link href="/live" className="link-underline text-mute">
-              {t("home.seeLive")}
-            </Link>
-            .
-          </p>
-        </div>
-      </section>
     </>
   );
 }

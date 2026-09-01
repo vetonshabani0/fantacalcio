@@ -46,7 +46,7 @@ function LanguageSwitch() {
 
 function isActive(pathname: string, href: string): boolean {
   if (href === "/") return pathname === "/";
-  if (href === "/lega-reale") return pathname.startsWith("/lega");
+  if (href === "/lega-reale") return pathname.startsWith("/lega-reale");
   return pathname.startsWith(href);
 }
 
