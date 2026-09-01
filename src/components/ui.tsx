@@ -126,11 +126,14 @@ export function MatchState({ state }: { state: string }) {
 
 export function Section({
   title,
+  titleNode,
   hint,
   right,
   className = "",
 }: {
   title: string;
+  /** Rich replacement for `title`; `title` stays as the accessible text. */
+  titleNode?: ReactNode;
   hint?: string;
   right?: ReactNode;
   className?: string;
@@ -140,7 +143,9 @@ export function Section({
       className={`gutter flex flex-wrap items-end justify-between gap-x-4 gap-y-3 ${className}`}
     >
       <div className="min-w-0 flex-1 basis-64">
-        <h2 className="display text-[22px] md:text-[26px]">{title}</h2>
+        <h2 className="display text-[22px] md:text-[26px]">
+          {titleNode ?? title}
+        </h2>
         {hint ? (
           <p className="mt-1.5 text-[12px] leading-snug text-faint">{hint}</p>
         ) : null}

@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { useFlash } from "@/hooks/useLive";
 import type { RealMatch } from "@/lib/fanta/types";
+import { Crest } from "./Crest";
 import { intlLocale, useLocale } from "./LocaleProvider";
 import { MatchState } from "./ui";
 
@@ -20,11 +21,13 @@ export function kickoffLabel(match: RealMatch, locale = "it-IT"): string {
 }
 
 function Side({
+  teamId,
   name,
   goals,
   played,
   dim,
 }: {
+  teamId: number;
   name: string;
   goals: number;
   played: boolean;
@@ -32,11 +35,14 @@ function Side({
 }) {
   const flash = useFlash(goals);
   return (
-    <div className={`flex items-baseline justify-between gap-3 rounded px-1 ${flash}`}>
-      <span
-        className={`truncate text-[14px] font-medium ${dim ? "text-mute" : "text-ink"}`}
-      >
-        {name}
+    <div className={`flex items-center justify-between gap-2 rounded px-1 ${flash}`}>
+      <span className="flex min-w-0 items-center gap-2">
+        <Crest teamId={teamId} teamName={name} size="sm" />
+        <span
+          className={`truncate text-[14px] font-medium ${dim ? "text-mute" : "text-ink"}`}
+        >
+          {name}
+        </span>
       </span>
       <span
         className={`num text-[17px] font-extrabold ${
@@ -84,12 +90,14 @@ export function MatchCard({
       </div>
       <div className="mt-3 space-y-1">
         <Side
+          teamId={match.homeTeamId}
           name={match.homeTeamName}
           goals={match.homeGoals}
           played={played}
           dim={homeLost}
         />
         <Side
+          teamId={match.awayTeamId}
           name={match.awayTeamName}
           goals={match.awayGoals}
           played={played}
@@ -139,10 +147,20 @@ export function ScoreMarquee({ matches }: { matches: RealMatch[] }) {
               className="flex shrink-0 items-center gap-2 whitespace-nowrap px-5 text-[12px]"
             >
               {match.state === "live" ? <span className="pip" /> : null}
+              <Crest
+                teamId={match.homeTeamId}
+                teamName={match.homeTeamName}
+                size="sm"
+              />
               <span className="text-mute">{match.homeTeamName}</span>
               <span className="num font-bold text-ink">
                 {played ? `${match.homeGoals}–${match.awayGoals}` : "vs"}
               </span>
+              <Crest
+                teamId={match.awayTeamId}
+                teamName={match.awayTeamName}
+                size="sm"
+              />
               <span className="text-mute">{match.awayTeamName}</span>
               <span className="pl-3 text-faint">·</span>
             </span>

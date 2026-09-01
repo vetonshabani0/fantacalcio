@@ -3,6 +3,7 @@
 import { minuteLabel } from "@/lib/fanta/format";
 import type { EventKind } from "@/lib/fanta/types";
 import type { BoardPlayer } from "@/lib/api-types";
+import { Crest } from "./Crest";
 import { useT } from "./LocaleProvider";
 import { formatPoints, Role, Sheet } from "./ui";
 
@@ -28,7 +29,14 @@ export function PlayerSheet({
                 {player.name}
               </h3>
             </div>
-            <p className="label mt-1">{player.teamName}</p>
+            <p className="label mt-1 flex items-center gap-1.5">
+              <Crest
+                teamId={player.teamId}
+                teamName={player.teamName}
+                size="sm"
+              />
+              {player.teamName}
+            </p>
           </div>
         ) : null
       }

@@ -6,6 +6,7 @@ import { useLiveBoard } from "@/hooks/useLive";
 import { formatFormation, minuteLabel, minuteOrder } from "@/lib/fanta/format";
 import type { BoardPlayer } from "@/lib/api-types";
 import { intlLocale, useLocale, useT } from "./LocaleProvider";
+import { Crest } from "./Crest";
 import { MatchDetail } from "./MatchDetail";
 import { MatchRail } from "./MatchRail";
 import { PlayerSheet } from "./PlayerSheet";
@@ -67,7 +68,12 @@ function Movers({
             <span className="min-w-0 flex-1 truncate text-[14px] font-medium">
               {player.name}
             </span>
-            <span className="shrink-0 text-[11px] text-faint">
+            <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-faint">
+              <Crest
+                teamId={player.teamId}
+                teamName={player.teamName}
+                size="sm"
+              />
               {player.teamName}
             </span>
             <span className={`num w-11 shrink-0 text-right text-[17px] font-extrabold ${tone}`}>
@@ -123,7 +129,12 @@ function Changes({ players }: { players: BoardPlayer[] }) {
                 </span>
               ) : null}
             </span>
-            <span className="shrink-0 text-[11px] text-faint">
+            <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-faint">
+              <Crest
+                teamId={incoming.teamId}
+                teamName={incoming.teamName}
+                size="sm"
+              />
               {incoming.teamName}
             </span>
           </div>
@@ -202,6 +213,23 @@ export function LiveBoardView() {
       {activeMatch ? (
         <section className="pt-12">
           <Section
+            titleNode={
+              <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                <Crest
+                  teamId={activeMatch.homeTeamId}
+                  teamName={activeMatch.homeTeamName}
+                  size="lg"
+                />
+                <span>{activeMatch.homeTeamName}</span>
+                <span className="text-faint">—</span>
+                <Crest
+                  teamId={activeMatch.awayTeamId}
+                  teamName={activeMatch.awayTeamName}
+                  size="lg"
+                />
+                <span>{activeMatch.awayTeamName}</span>
+              </span>
+            }
             title={`${activeMatch.homeTeamName} — ${activeMatch.awayTeamName}`}
             hint={
               activeMatch.homeFormation

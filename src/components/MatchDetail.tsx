@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import type { BoardPlayer } from "@/lib/api-types";
 import type { RealMatch } from "@/lib/fanta/types";
 import { PlayerRow, PlayerRowHeader } from "./PlayerRow";
+import { Crest } from "./Crest";
 import { useT } from "./LocaleProvider";
 import { Empty, Role, Segmented } from "./ui";
 
@@ -225,12 +226,25 @@ export function MatchDetail({
       {/* Wider screens show both squads side by side. */}
       <div className="gutter hidden gap-12 md:grid md:grid-cols-2">
         {[
-          { name: match.homeTeamName, goals: match.homeGoals, list: home },
-          { name: match.awayTeamName, goals: match.awayGoals, list: away },
+          {
+            id: match.homeTeamId,
+            name: match.homeTeamName,
+            goals: match.homeGoals,
+            list: home,
+          },
+          {
+            id: match.awayTeamId,
+            name: match.awayTeamName,
+            goals: match.awayGoals,
+            list: away,
+          },
         ].map((column) => (
           <div key={column.name}>
-            <div className="flex items-baseline justify-between gap-3 pb-3">
-              <h3 className="display-tight text-[20px]">{column.name}</h3>
+            <div className="flex items-center justify-between gap-3 pb-3">
+              <h3 className="display-tight flex items-center gap-2.5 text-[20px]">
+                <Crest teamId={column.id} teamName={column.name} size="lg" />
+                {column.name}
+              </h3>
               <span className="num text-[26px] font-extrabold">
                 {played ? column.goals : "–"}
               </span>
