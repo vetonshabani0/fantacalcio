@@ -48,6 +48,7 @@ const DROP = [
   "src/components/PublicSearch.tsx",
   "src/components/PublicLeagueView.tsx",
   "src/components/PublicTeamView.tsx",
+  "src/components/MatchweekView.tsx",
   "src/components/TeamBadge.tsx",
   "src/components/RealEntry.tsx",
   "src/components/MyLeaguesIntro.tsx",

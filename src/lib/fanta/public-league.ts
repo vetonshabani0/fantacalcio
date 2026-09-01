@@ -334,3 +334,153 @@ export async function fetchHistory(
 
   return { a: side("sq_a", teamA), b: side("sq_b", teamB) };
 }
+
+/* ------------------------------------------------------- matchweek view */
+
+export interface MatchweekEntry {
+  teamId: number;
+  name: string;
+  logo: string | null;
+  fantapoints: number;
+  goals: number;
+  points: number;
+  result: "V" | "N" | "P";
+}
+
+export interface StandingAt {
+  teamId: number;
+  name: string;
+  logo: string | null;
+  position: number;
+  played: number;
+  points: number;
+  won: number;
+  drawn: number;
+  lost: number;
+  goalsFor: number;
+  fantapoints: number;
+}
+
+export interface MatchweekView {
+  matchweek: number;
+  settled: boolean;
+  lastSettled: number;
+  lastMatchweek: number;
+  entries: MatchweekEntry[];
+  tableAfter: StandingAt[];
+}
+
+/**
+ * Fantapoints convert to goals at a fixed threshold: the first at 66, then one
+ * every 6. Leagues can retune this, but it is the standard table and it
+ * reproduces the official scores for the leagues checked against.
+ */
+export function goalsFromFantapoints(fp: number, first = 66, step = 6): number {
+  return fp < first ? 0 : 1 + Math.floor((fp - first) / step);
+}
+
+/** Every team's history, one request per team. */
+export async function fetchAllHistories(
+  league: PublicLeague,
+): Promise<Map<number, MatchweekRow[]>> {
+  const ids = league.teams.map((t) => t.id);
+  const out = new Map<number, MatchweekRow[]>();
+  if (ids.length < 2) return out;
+
+  await Promise.all(
+    ids.map(async (id) => {
+      const partner = ids.find((x) => x !== id)!;
+      const h = await fetchHistory(
+        league.leagueId,
+        league.competitionId,
+        id,
+        partner,
+      ).catch(() => null);
+      out.set(id, h?.a.rows ?? []);
+    }),
+  );
+  return out;
+}
+
+/**
+ * One matchweek's results plus the table as it stood after it.
+ *
+ * Who played whom is deliberately absent: the calendar is behind the login wall,
+ * and it cannot be recovered from what is public — result signs and conceded-goal
+ * totals leave several fixture lists consistent with the same data, so any
+ * pairing shown here would be a guess. Goals against are omitted from the
+ * historical table for the same reason.
+ */
+export function buildMatchweekView(
+  league: PublicLeague,
+  histories: Map<number, MatchweekRow[]>,
+  matchweek: number,
+): MatchweekView {
+  const meta = new Map(league.teams.map((t) => [t.id, t]));
+
+  const lastSettled = Math.max(
+    0,
+    ...[...histories.values()].flatMap((rows) =>
+      rows.filter((r) => r.settled).map((r) => r.matchweek),
+    ),
+  );
+
+  const entries: MatchweekEntry[] = [];
+  for (const [teamId, rows] of histories) {
+    const row = rows.find((r) => r.matchweek === matchweek);
+    const team = meta.get(teamId);
+    if (!row || !team) continue;
+    entries.push({
+      teamId,
+      name: team.name,
+      logo: team.logo,
+      fantapoints: row.fantapoints,
+      goals: goalsFromFantapoints(row.fantapoints),
+      points: row.points,
+      result: row.result,
+    });
+  }
+  entries.sort((a, b) => b.fantapoints - a.fantapoints);
+
+  const settled = entries.length > 0 && matchweek <= lastSettled;
+
+  // Cumulative table through this matchweek, recomputed from the per-matchweek
+  // records. Goals against need the fixtures, so they are left out.
+  const table: StandingAt[] = league.teams.map((team) => {
+    const rows = (histories.get(team.id) ?? []).filter(
+      (r) => r.settled && r.matchweek <= matchweek,
+    );
+    return {
+      teamId: team.id,
+      name: team.name,
+      logo: team.logo,
+      position: 0,
+      played: rows.length,
+      points: rows.reduce((s, r) => s + r.points, 0),
+      won: rows.filter((r) => r.result === "V").length,
+      drawn: rows.filter((r) => r.result === "N").length,
+      lost: rows.filter((r) => r.result === "P").length,
+      goalsFor: rows.reduce((s, r) => s + goalsFromFantapoints(r.fantapoints), 0),
+      fantapoints:
+        Math.round(rows.reduce((s, r) => s + r.fantapoints, 0) * 100) / 100,
+    };
+  });
+
+  table.sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.goalsFor - a.goalsFor ||
+      b.fantapoints - a.fantapoints ||
+      a.name.localeCompare(b.name),
+  );
+  table.forEach((row, i) => (row.position = i + 1));
+
+  return {
+    matchweek,
+    settled,
+    lastSettled,
+    lastMatchweek: league.lastMatchweek,
+    entries,
+    tableAfter: table,
+  };
+}

@@ -303,6 +303,22 @@ const it = {
   "team.liveNote": "Il punteggio in diretta della tua lega richiede le formazioni, che non sono pubbliche. La diretta di Serie A qui sotto lo è.",
   "team.fpShort": "Fantapunti",
   "team.ptShort": "Pt",
+  // ------------------------------------------------------------ matchweeks
+  "mw.title": "Giornata {n}",
+  "mw.nav": "Giornate",
+  "mw.prev": "Giornata precedente",
+  "mw.next": "Giornata successiva",
+  "mw.results": "Risultati di giornata",
+  "mw.tableAfter": "Classifica dopo la giornata {n}",
+  "mw.notPlayed": "Giornata non ancora calcolata.",
+  "mw.fantapoints": "Fantapunti",
+  "mw.goals": "Gol",
+  "mw.points": "Pt",
+  "mw.team": "Squadra",
+  "mw.noFixtures": "Gli accoppiamenti del calendario non sono pubblici: qui vedi il punteggio di ogni squadra in questa giornata, non chi ha giocato contro chi.",
+  "mw.goalsNote": "I gol sono calcolati dai fantapunti con la soglia standard: primo gol a 66, poi uno ogni 6.",
+  "mw.open": "Apri giornate",
+  "mw.loading": "Leggo la giornata",
 } as const;
 
 export type TranslationKey = keyof typeof it;
@@ -575,6 +591,21 @@ const en: Record<TranslationKey, string> = {
   "team.liveNote": "Your league's live score needs the lineups, which are not public. The Serie A live board below is.",
   "team.fpShort": "Fantasy",
   "team.ptShort": "Pts",
+  "mw.title": "Matchweek {n}",
+  "mw.nav": "Matchweeks",
+  "mw.prev": "Previous matchweek",
+  "mw.next": "Next matchweek",
+  "mw.results": "Matchweek results",
+  "mw.tableAfter": "Table after matchweek {n}",
+  "mw.notPlayed": "This matchweek has not been calculated yet.",
+  "mw.fantapoints": "Fantasy pts",
+  "mw.goals": "Goals",
+  "mw.points": "Pts",
+  "mw.team": "Team",
+  "mw.noFixtures": "The calendar pairings are not public: this shows what every team scored in this matchweek, not who played whom.",
+  "mw.goalsNote": "Goals are derived from fantasy points using the standard threshold: first goal at 66, then one every 6.",
+  "mw.open": "Browse matchweeks",
+  "mw.loading": "Reading the matchweek",
 };
 
 export const DICTIONARIES = { it, en } satisfies Record<

@@ -76,7 +76,19 @@ export function PublicLeagueView({ alias }: { alias: string }) {
       </section>
 
       <section className="pt-10">
-        <Section title={t("pub.standings")} />
+        <Section
+          title={t("pub.standings")}
+          right={
+            <Link
+              href={`/lega-pubblica/${league.alias}/giornata/${
+                serieA?.matchweek ?? 1
+              }`}
+              className="tap label rounded-full border border-acid/40 px-3 py-1.5 !text-acid"
+            >
+              {t("mw.open")}
+            </Link>
+          }
+        />
         <div className="gutter mt-5">
           {league.teams.length === 0 ? (
             <Empty>{t("pub.notFoundBody")}</Empty>
