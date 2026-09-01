@@ -256,3 +256,81 @@ export async function searchLeagues(query: string): Promise<string[]> {
   );
   return found.filter((a): a is string => a != null);
 }
+
+/* ------------------------------------------------------- matchweek history */
+
+const APP_KEY = "ICiELOObd5DF5uJEATi77CRvHiiRuMU0";
+
+export interface MatchweekRow {
+  matchweek: number;
+  settled: boolean;
+  points: number;
+  fantapoints: number;
+  /** V win, N draw, P loss. */
+  result: "V" | "N" | "P";
+}
+
+export interface TeamHistory {
+  teamId: number;
+  rows: MatchweekRow[];
+}
+
+interface ConfrontoSide {
+  id: number;
+  punti?: number;
+  somma_punti?: number;
+  segno?: string;
+}
+
+/**
+ * Per-matchweek record for two teams.
+ *
+ * `V1_LegheStatistiche/Confronto` is the one league service that answers with
+ * only the public app key, no session. Despite taking two team ids, each side's
+ * figures are that team's own result for the matchweek and do not depend on the
+ * opponent passed in — verified by querying the same team against several
+ * others and getting identical rows. That makes it usable as a per-team feed.
+ *
+ * Unplayed matchweeks come back as zeroes with `calcolata: false`, so a league's
+ * in-progress round has no live figures here; those live behind the login wall.
+ */
+export async function fetchHistory(
+  leagueId: number,
+  competitionId: number,
+  teamA: number,
+  teamB: number,
+): Promise<{ a: TeamHistory; b: TeamHistory } | null> {
+  const url =
+    `${HOST}/servizi/V1_LegheStatistiche/Confronto` +
+    `?id_lega=${leagueId}&id_squadra_a=${teamA}` +
+    `&id_squadra_b=${teamB}&id_competizione=${competitionId}`;
+
+  const res = await fetch(url, {
+    headers: { ...BROWSER_HEADERS, app_key: APP_KEY },
+    cache: "no-store",
+  }).catch(() => null);
+  if (!res?.ok) return null;
+
+  const body = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: { giornata: number; calcolata: boolean; sq_a: ConfrontoSide; sq_b: ConfrontoSide }[];
+  } | null;
+  if (!body?.success || !body.data) return null;
+
+  const side = (pick: "sq_a" | "sq_b", id: number): TeamHistory => ({
+    teamId: id,
+    rows: body.data!.map((row) => {
+      const s = row[pick];
+      const sign = s.segno === "V" || s.segno === "P" ? s.segno : "N";
+      return {
+        matchweek: row.giornata,
+        settled: !!row.calcolata,
+        points: Number(s.punti ?? 0),
+        fantapoints: Number(s.somma_punti ?? 0),
+        result: sign as "V" | "N" | "P",
+      };
+    }),
+  });
+
+  return { a: side("sq_a", teamA), b: side("sq_b", teamB) };
+}

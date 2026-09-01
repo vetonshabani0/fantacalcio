@@ -4,33 +4,13 @@ import Link from "next/link";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { PublicLeague } from "@/lib/fanta/public-league";
 import { useT } from "./LocaleProvider";
+import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, LivePip, Reveal, Section } from "./ui";
 
 interface Payload {
   league: PublicLeague;
   serieA: { matchweek: number; live: boolean } | null;
   error?: string;
-}
-
-function TeamBadge({ logo, name }: { logo: string | null; name: string }) {
-  if (!logo) {
-    return (
-      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/8 text-[10px] font-bold text-mute">
-        {name.slice(0, 1).toUpperCase()}
-      </span>
-    );
-  }
-  return (
-    // Third-party asset, and the static export ships no image optimiser.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={logo}
-      alt=""
-      aria-hidden
-      loading="lazy"
-      className="h-7 w-7 shrink-0 rounded-full object-cover"
-    />
-  );
 }
 
 export function PublicLeagueView({ alias }: { alias: string }) {
@@ -119,15 +99,16 @@ export function PublicLeagueView({ alias }: { alias: string }) {
               </div>
 
               {league.teams.map((team, i) => (
-                <div
+                <Link
                   key={team.id}
+                  href={`/lega-pubblica/${league.alias}/squadra/${team.id}`}
                   style={{ animationDelay: `${i * 0.035}s` }}
-                  className="reveal flex items-center gap-3 border-b border-[var(--line-soft)] py-3"
+                  className="tap reveal flex items-center gap-3 border-b border-[var(--line-soft)] py-3 transition-colors hover:bg-white/[0.03]"
                 >
                   <span className="num w-5 shrink-0 text-right text-[15px] font-extrabold text-mute">
                     {team.position}
                   </span>
-                  <TeamBadge logo={team.logo} name={team.name} />
+                  <TeamBadge logo={team.logo} name={team.name} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[15px] font-semibold">
                       {team.name}
@@ -149,7 +130,8 @@ export function PublicLeagueView({ alias }: { alias: string }) {
                   <span className="num w-8 shrink-0 text-right text-[19px] font-extrabold">
                     {team.points}
                   </span>
-                </div>
+                  <span className="shrink-0 text-[13px] text-faint">›</span>
+                </Link>
               ))}
             </>
           )}

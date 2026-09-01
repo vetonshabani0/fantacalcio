@@ -47,6 +47,8 @@ const DROP = [
   "src/lib/fanta/public-league.ts",
   "src/components/PublicSearch.tsx",
   "src/components/PublicLeagueView.tsx",
+  "src/components/PublicTeamView.tsx",
+  "src/components/TeamBadge.tsx",
   "src/components/RealEntry.tsx",
   "src/components/MyLeaguesIntro.tsx",
   "src/components/RealLeagueView.tsx",
