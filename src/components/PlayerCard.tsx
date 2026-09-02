@@ -26,12 +26,12 @@ export function PlayerCard({
   const weak = value != null && value < 6;
 
   const scoreTone = dropped
-    ? "bg-white/8 text-faint"
+    ? "bg-fill text-faint"
     : strong
       ? "bg-acid text-ground"
       : weak
         ? "bg-flare/85 text-ground"
-        : "bg-white/85 text-ground";
+        : "bg-paper text-ground";
 
   return (
     <div

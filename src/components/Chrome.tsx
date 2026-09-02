@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { LOCALES, LOCALE_LABEL } from "@/lib/i18n";
 import { useLocale, useT } from "./LocaleProvider";
+import { useTheme } from "./ThemeProvider";
 
 const IS_STATIC = process.env.NEXT_PUBLIC_STATIC === "1";
 
@@ -15,6 +16,39 @@ const TABS = [
     ? []
     : [{ href: "/lega-reale", key: "nav.leagues" as const, glyph: "▤" }]),
 ];
+
+function ThemeSwitch({ compact = false }: { compact?: boolean }) {
+  const { theme, toggle } = useTheme();
+  const t = useT();
+  const next = theme === "dark" ? t("nav.light") : t("nav.dark");
+
+  return (
+    <button
+      onClick={toggle}
+      aria-label={`${t("nav.theme")}: ${next}`}
+      title={`${t("nav.theme")}: ${next}`}
+      className={
+        compact
+          ? "tap flex flex-col items-center gap-1 py-3"
+          : "tap grid h-8 w-8 place-items-center rounded-full border border-[var(--line)] text-mute transition-colors hover:text-ink"
+      }
+    >
+      <span
+        className={
+          compact
+            ? "text-[15px] leading-none text-faint"
+            : "text-[13px] leading-none"
+        }
+        aria-hidden
+      >
+        {theme === "dark" ? "☀" : "☾"}
+      </span>
+      {compact ? (
+        <span className="label !text-[9px]">{t("nav.theme")}</span>
+      ) : null}
+    </button>
+  );
+}
 
 function LanguageSwitch() {
   const { locale, setLocale } = useLocale();
@@ -99,6 +133,7 @@ export function Chrome({ children }: { children: ReactNode }) {
               </Link>
             ))}
             <LanguageSwitch />
+            <ThemeSwitch />
           </nav>
         </div>
       </header>
@@ -111,7 +146,7 @@ export function Chrome({ children }: { children: ReactNode }) {
         <div
           className="grid"
           style={{
-            gridTemplateColumns: `repeat(${TABS.length + 1}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${TABS.length + 2}, minmax(0, 1fr))`,
           }}
         >
           {TABS.map((tab) => {
@@ -144,6 +179,7 @@ export function Chrome({ children }: { children: ReactNode }) {
           })}
 
           <MobileLanguageSwitch />
+          <ThemeSwitch compact />
         </div>
       </nav>
     </>

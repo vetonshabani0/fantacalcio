@@ -55,12 +55,12 @@ function Shirt({ slot, index }: { slot: SerializedSlot; index: number }) {
       <div
         className={`relative grid h-9 w-9 place-items-center rounded-full border md:h-11 md:w-11 ${
           slot.void
-            ? "border-dashed border-white/22 bg-transparent"
+            ? "border-dashed border-[var(--edge)] bg-transparent"
             : strong
               ? "border-acid bg-acid text-ground"
               : weak
                 ? "border-flare/35 bg-flare/[0.08] text-flare/90"
-                : "border-white/25 bg-ground-3 text-ink"
+                : "border-[var(--edge)] bg-ground-3 text-ink"
         }`}
       >
         <span className="num text-[12px] font-extrabold md:text-[13px]">

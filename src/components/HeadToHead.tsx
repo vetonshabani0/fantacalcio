@@ -153,7 +153,7 @@ function Half({
       <div className={`num mt-1 rounded text-[34px] font-extrabold leading-none md:text-[44px] ${flash}`}>
         <Ticker value={side.total} decimals={side.total % 1 === 0 ? 0 : 1} />
       </div>
-      <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-white/10">
+      <div className="mt-2.5 h-[3px] overflow-hidden rounded-full bg-fill">
         <motion.div
           initial={false}
           animate={{ scaleX: goalProgress(side.total, first, step) }}

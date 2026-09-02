@@ -22,6 +22,9 @@ const it = {
   "nav.leagues": "Le mie leghe",
   "nav.createLeague": "Crea lega",
   "nav.language": "Lingua",
+  "nav.theme": "Tema",
+  "nav.light": "Chiaro",
+  "nav.dark": "Scuro",
 
   // ---------------------------------------------------------------- home
   "home.eyebrow": "Serie A · in diretta",
@@ -370,6 +373,9 @@ const en: Record<TranslationKey, string> = {
   "nav.leagues": "My leagues",
   "nav.createLeague": "Create league",
   "nav.language": "Language",
+  "nav.theme": "Theme",
+  "nav.light": "Light",
+  "nav.dark": "Dark",
 
   "home.eyebrow": "Serie A · live",
   "home.title1": "Your league,",

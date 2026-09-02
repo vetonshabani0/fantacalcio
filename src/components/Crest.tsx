@@ -35,7 +35,7 @@ export function Crest({
     return (
       <span
         aria-hidden
-        className={`${box} grid place-items-center rounded-full bg-white/8 text-[9px] font-bold text-mute`}
+        className={`${box} grid place-items-center rounded-full bg-fill text-[9px] font-bold text-mute`}
       >
         {teamName.slice(0, 1).toUpperCase()}
       </span>

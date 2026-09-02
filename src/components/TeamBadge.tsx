@@ -16,7 +16,7 @@ export function TeamBadge({
   if (!logo) {
     return (
       <span
-        className={`${box} grid place-items-center bg-white/8 text-[11px] font-bold text-mute`}
+        className={`${box} grid place-items-center bg-fill text-[11px] font-bold text-mute`}
       >
         {name.slice(0, 1).toUpperCase()}
       </span>

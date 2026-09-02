@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Inter } from "next/font/google";
 import { Chrome } from "@/components/Chrome";
 import { LocaleProvider } from "@/components/LocaleProvider";
+import {
+  THEME_INIT_SCRIPT,
+  ThemeProvider,
+} from "@/components/ThemeProvider";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -24,7 +28,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#08090a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f7f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#08090a" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -41,10 +48,16 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${archivo.variable} ${inter.variable}`}
     >
+      <head>
+        {/* Applies a stored dark choice before the first paint. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
-        <LocaleProvider>
-          <Chrome>{children}</Chrome>
-        </LocaleProvider>
+        <ThemeProvider>
+          <LocaleProvider>
+            <Chrome>{children}</Chrome>
+          </LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

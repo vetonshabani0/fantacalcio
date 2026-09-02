@@ -21,7 +21,7 @@ interface Payload {
 
 const RESULT_TONE: Record<string, string> = {
   V: "bg-acid text-ground",
-  N: "bg-white/12 text-mute",
+  N: "bg-fill-strong text-mute",
   P: "bg-flare/25 text-flare",
 };
 

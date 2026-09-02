@@ -63,7 +63,7 @@ function Probable({
           <span className="min-w-0 flex-1 truncate text-[14px] font-medium">
             {player.name}
           </span>
-          <span className="h-[3px] w-14 shrink-0 overflow-hidden rounded-full bg-white/10">
+          <span className="h-[3px] w-14 shrink-0 overflow-hidden rounded-full bg-fill">
             <span
               style={
                 {
@@ -71,7 +71,7 @@ function Probable({
                 } as React.CSSProperties
               }
               className={`grow-x block h-full rounded-full ${
-                player.startProbability >= 100 ? "bg-acid" : "bg-white/35"
+                player.startProbability >= 100 ? "bg-acid" : "bg-[var(--edge-strong)]"
               }`}
             />
           </span>

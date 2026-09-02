@@ -287,7 +287,7 @@ export function Sheet({
             className="fixed inset-x-0 bottom-0 z-50 max-h-[88dvh] overflow-hidden rounded-t-3xl border-t border-[var(--line)] bg-ground-2 md:inset-x-auto md:left-1/2 md:bottom-auto md:top-1/2 md:w-[min(680px,92vw)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border"
           >
             <div className="flex justify-center pt-2.5 md:hidden">
-              <span className="h-1 w-9 rounded-full bg-white/18" />
+              <span className="h-1 w-9 rounded-full bg-fill-strong" />
             </div>
             {title ? (
               <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-3">

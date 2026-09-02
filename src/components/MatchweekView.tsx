@@ -20,7 +20,7 @@ interface Payload {
 
 const RESULT_TONE: Record<string, string> = {
   V: "bg-acid text-ground",
-  N: "bg-white/12 text-mute",
+  N: "bg-fill-strong text-mute",
   P: "bg-flare/25 text-flare",
 };
 
@@ -50,7 +50,7 @@ function MatchweekRail({
               active
                 ? "border-acid bg-acid text-ground"
                 : played
-                  ? "border-[var(--line)] text-ink hover:border-white/30"
+                  ? "border-[var(--line)] text-ink hover:border-[var(--edge-strong)]"
                   : "border-[var(--line)] text-faint"
             }`}
           >
@@ -96,7 +96,7 @@ function Fixtures({
             key={`${f.homeTeamId}-${f.awayTeamId}`}
             href={`/lega-pubblica/${alias}/giornata/${f.matchweek}/${f.homeTeamId}/${f.awayTeamId}`}
             style={{ animationDelay: `${i * 0.05}s` }}
-            className="tap reveal grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-[var(--line)] bg-ground-2 p-3.5 transition-colors hover:border-white/25 md:gap-4 md:p-4"
+            className="tap reveal grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-[var(--line)] bg-ground-2 p-3.5 transition-colors hover:border-[var(--edge)] md:gap-4 md:p-4"
           >
             <span className="flex min-w-0 items-center gap-2.5">
               <TeamBadge logo={home.logo} name={home.name} size="sm" />

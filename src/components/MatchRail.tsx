@@ -79,7 +79,7 @@ export function MatchCard({
       className={`w-[188px] rounded-2xl border p-3.5 text-left transition-colors md:w-[210px] ${
         active
           ? "border-acid/55 bg-acid/[0.07]"
-          : "border-[var(--line)] bg-ground-2 hover:border-white/20"
+          : "border-[var(--line)] bg-ground-2 hover:border-[var(--edge)]"
       }`}
     >
       <div className="flex items-center justify-between gap-2">

@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  /* Ground is a cold near-black; paper is warm, so the contrast never reads grey. */
-  --color-ground: #08090a;
-  --color-ground-2: #0d0f11;
-  --color-ground-3: #14171a;
-  --color-paper: #f4f2ed;
+  --color-ground: var(--ground);
+  --color-ground-2: var(--ground-2);
+  --color-ground-3: var(--ground-3);
+  --color-paper: var(--paper);
 
-  --color-ink: #f4f2ed;
-  --color-mute: #9aa0a8;
-  --color-faint: #5a6068;
+  --color-ink: var(--ink);
+  --color-mute: var(--mute);
+  --color-faint: var(--faint);
 
-  /* One brand accent, doubling as "points gained". */
-  --color-acid: #c8ff2e;
-  --color-acid-dim: #93bd15;
-  --color-flare: #ff4b36;
-  --color-gold: #ffc53d;
+  --color-acid: var(--acid);
+  --color-acid-dim: var(--acid-dim);
+  --color-flare: var(--flare);
+  --color-gold: var(--gold);
+
+  --color-fill-weak: var(--fill-weak);
+  --color-fill: var(--fill);
+  --color-fill-strong: var(--fill-strong);
+  --color-edge: var(--edge);
+  --color-edge-strong: var(--edge-strong);
 
   --font-display: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
@@ -23,10 +27,76 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+
+/*
+ * Two themes from one set of names.
+ *
+ * Every colour below is a variable that flips with the theme, so components
+ * never name a literal shade. The accent is the interesting one: it is used both
+ * as text and as a button fill, and it is always paired with `ground`, which
+ * inverts — so a bright lime on near-black in the dark theme becomes a deep
+ * green carrying near-white text in the light one, and both stay readable.
+ */
 :root {
+  color-scheme: light;
+
+  --ground: #f7f7f5;
+  --ground-2: #ffffff;
+  --ground-3: #eeeeeb;
+  /* The inverted surface, for pills and chips that must pop. */
+  --paper: #0c0e11;
+
+  --ink: #0c0e11;
+  --mute: #545e69;
+  --faint: #878f98;
+
+  --acid: #4f8a0b;
+  --acid-dim: #6ba614;
+  --flare: #cf3520;
+  --gold: #9a6d05;
+
+  --line: rgba(12, 14, 17, 0.13);
+  --line-soft: rgba(12, 14, 17, 0.07);
+
+  /* Translucent overlays, so no component hardcodes white or black. */
+  --fill-weak: rgba(12, 14, 17, 0.04);
+  --fill: rgba(12, 14, 17, 0.07);
+  --fill-strong: rgba(12, 14, 17, 0.12);
+  --edge: rgba(12, 14, 17, 0.18);
+  --edge-strong: rgba(12, 14, 17, 0.26);
+
+  --pitch-tint: rgba(79, 138, 11, 0.09);
+  --pitch-line: rgba(12, 14, 17, 0.09);
+}
+
+[data-theme="dark"] {
   color-scheme: dark;
+
+  --ground: #08090a;
+  --ground-2: #0d0f11;
+  --ground-3: #14171a;
+  --paper: #f4f2ed;
+
+  --ink: #f4f2ed;
+  --mute: #9aa0a8;
+  --faint: #5a6068;
+
+  --acid: #c8ff2e;
+  --acid-dim: #93bd15;
+  --flare: #ff4b36;
+  --gold: #ffc53d;
+
   --line: rgba(244, 242, 237, 0.1);
   --line-soft: rgba(244, 242, 237, 0.06);
+
+  --fill-weak: rgba(244, 242, 237, 0.04);
+  --fill: rgba(244, 242, 237, 0.08);
+  --fill-strong: rgba(244, 242, 237, 0.16);
+  --edge: rgba(244, 242, 237, 0.22);
+  --edge-strong: rgba(244, 242, 237, 0.32);
+
+  --pitch-tint: rgba(200, 255, 46, 0.05);
+  --pitch-line: rgba(244, 242, 237, 0.07);
 }
 
 * {
@@ -39,8 +109,8 @@ html {
 }
 
 body {
-  background: var(--color-ground);
-  color: var(--color-ink);
+  background: var(--ground);
+  color: var(--ink);
   font-family: var(--font-sans);
   min-height: 100dvh;
   overscroll-behavior-y: none;
@@ -162,8 +232,8 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: var(--color-flare);
-  box-shadow: 0 0 0 0 rgba(255, 75, 54, 0.6);
+  background: var(--flare);
+  box-shadow: 0 0 0 0 rgba(207, 53, 32, 0.55);
   animation: pip 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -181,7 +251,7 @@ body {
 
 @keyframes sweep-up {
   0% {
-    background-color: rgba(200, 255, 46, 0.22);
+    background-color: color-mix(in srgb, var(--acid) 22%, transparent);
   }
   100% {
     background-color: transparent;
@@ -190,7 +260,7 @@ body {
 
 @keyframes sweep-down {
   0% {
-    background-color: rgba(255, 75, 54, 0.22);
+    background-color: color-mix(in srgb, var(--flare) 22%, transparent);
   }
   100% {
     background-color: transparent;
@@ -284,11 +354,11 @@ body {
   background:
     repeating-linear-gradient(
       180deg,
-      rgba(200, 255, 46, 0.035) 0 8.5%,
+      var(--pitch-tint) 0 8.5%,
       transparent 8.5% 17%
     ),
-    radial-gradient(120% 70% at 50% 0%, rgba(200, 255, 46, 0.07), transparent 70%),
-    var(--color-ground-2);
+    radial-gradient(120% 70% at 50% 0%, var(--pitch-tint), transparent 70%),
+    var(--ground-2);
 }
 
 /* ---------- misc ---------- */
@@ -302,8 +372,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-acid);
-  color: var(--color-ground);
+  background: var(--acid);
+  color: var(--ground);
 }
 
 @media (prefers-reduced-motion: reduce) {
