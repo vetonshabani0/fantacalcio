@@ -63,7 +63,7 @@ function Shirt({ slot, index }: { slot: LineupSlot; index: number }) {
               : t("pitch.subOn", { name: slot.swappedWith })
             : undefined
         }
-        className={`relative grid h-9 w-9 place-items-center rounded-full border md:h-11 md:w-11 ${
+        className={`relative grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 md:h-11 md:w-11 ${
           dropped
             ? "border-dashed border-white/25 bg-transparent text-faint"
             : strong
@@ -73,20 +73,22 @@ function Shirt({ slot, index }: { slot: LineupSlot; index: number }) {
                 : "border-white/25 bg-ground-3 text-ink"
         }`}
       >
-        <span className="num text-[12px] font-extrabold md:text-[13px]">
+        <span className="num text-[10px] font-extrabold sm:text-[12px] md:text-[13px]">
           {value != null ? formatPoints(value) : "–"}
         </span>
         {slot.status === "out" ? (
-          <span className="absolute -right-1 -top-1 grid h-[15px] w-[15px] place-items-center rounded-full bg-flare text-[9px] font-black leading-none text-ground">
+          <span className="absolute -right-1 -top-1 grid h-[13px] w-[13px] place-items-center rounded-full bg-flare text-[8px] font-black leading-none text-ground sm:h-[15px] sm:w-[15px] sm:text-[9px]">
             ↓
           </span>
         ) : null}
       </div>
       <span className="flex w-full items-center justify-center gap-1">
         {slot.clubId ? (
-          <Crest teamId={slot.clubId} teamName={slot.club} size="sm" eager />
+          <span className="hidden sm:inline-flex">
+            <Crest teamId={slot.clubId} teamName={slot.club} size="sm" eager />
+          </span>
         ) : null}
-        <span className="truncate text-[9.5px] leading-tight text-mute md:text-[10.5px]">
+        <span className="truncate text-[8px] leading-tight text-mute sm:text-[9.5px] md:text-[10.5px]">
           {slot.name}
         </span>
       </span>
@@ -103,15 +105,17 @@ export function LineupPitch({ side }: { side: Side }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--line)]">
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] px-3 py-2.5">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--line)] px-2 py-2 sm:px-3 sm:py-2.5">
         <span className="flex min-w-0 items-center gap-2">
           {side.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={side.logo} alt="" aria-hidden className="h-6 w-6 shrink-0 rounded-full object-cover" />
+            <img src={side.logo} alt="" aria-hidden className="h-5 w-5 shrink-0 rounded-full object-cover sm:h-6 sm:w-6" />
           ) : null}
-          <span className="truncate text-[14px] font-semibold">{side.name}</span>
+          <span className="truncate text-[12px] font-semibold sm:text-[14px]">
+            {side.name}
+          </span>
         </span>
-        <span className="num shrink-0 text-[18px] font-extrabold">
+        <span className="num shrink-0 text-[15px] font-extrabold sm:text-[18px]">
           {formatPoints(side.total)}
         </span>
       </div>
@@ -124,7 +128,7 @@ export function LineupPitch({ side }: { side: Side }) {
 
         <div className="relative flex flex-col-reverse gap-4 px-2 py-6 md:gap-5 md:px-3 md:py-7">
           {rows.map((row, i) => (
-            <div key={i} className="flex items-start justify-center gap-1 md:gap-2">
+            <div key={i} className="flex items-start justify-center gap-0.5 sm:gap-1 md:gap-2">
               {row.map((slot) => (
                 <Shirt key={slot.playerId} slot={slot} index={index++} />
               ))}
@@ -133,14 +137,17 @@ export function LineupPitch({ side }: { side: Side }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-[var(--line)] px-3 py-2">
-        <span className="label">
-          {t("pitch.module")} {side.formation}
+      <div className="flex items-center justify-between gap-2 border-t border-[var(--line)] px-2 py-2 sm:px-3">
+        <span
+          className="num text-[11px] font-bold text-mute"
+          title={t("pitch.module")}
+        >
+          {side.formation}
           {side.formationAfterSubs !== side.formation
             ? ` → ${side.formationAfterSubs}`
             : ""}
         </span>
-        <span className="label">
+        <span className="num whitespace-nowrap text-[11px] text-faint">
           {side.points} {side.points === 1 ? "pt" : "pts"}
         </span>
       </div>
@@ -154,12 +161,11 @@ export function LineupPitch({ side }: { side: Side }) {
               className="flex items-center gap-2 py-1 text-[12px]"
             >
               <span className="text-acid">↑</span>
-              <span className="min-w-0 flex-1 truncate">
-                {slot.name}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate">{slot.name}</span>
                 {slot.swappedWith ? (
-                  <span className="text-faint">
-                    {" "}
-                    · {t("pitch.subOn", { name: slot.swappedWith })}
+                  <span className="block truncate text-[10.5px] text-faint">
+                    {t("pitch.subOn", { name: slot.swappedWith })}
                   </span>
                 ) : null}
               </span>

@@ -6,7 +6,7 @@ import { useLiveVersion } from "@/hooks/useLive";
 import type { MatchDetail, MatchSide } from "@/lib/fanta/official";
 import { LineupPitch } from "./LineupPitch";
 import { useT } from "./LocaleProvider";
-import { Loading, Reveal, Section } from "./ui";
+import { formatPoints, Loading, Reveal, Section } from "./ui";
 
 type Named = MatchSide & { name: string; logo: string | null };
 type Payload = Omit<MatchDetail, "home" | "away"> & {
@@ -90,23 +90,54 @@ export function MatchView({
       <section className="gutter pt-10 md:pt-16">
         <Reveal>
           {back}
-          <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <span className="truncate text-right text-[15px] font-semibold md:text-[18px]">
-              {data.home.name}
-            </span>
-            <span className="num shrink-0 text-[30px] font-extrabold md:text-[40px]">
-              {data.result || "–"}
-            </span>
-            <span className="truncate text-[15px] font-semibold md:text-[18px]">
-              {data.away.name}
-            </span>
+
+          <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl border border-[var(--line)] bg-ground-2 p-4 md:p-6">
+            {[data.home, data.away].map((side, i) => (
+              <div
+                key={side.teamId}
+                className={`min-w-0 ${i === 1 ? "order-3 text-right" : ""}`}
+              >
+                <div
+                  className={`flex items-center gap-2 ${i === 1 ? "flex-row-reverse" : ""}`}
+                >
+                  {side.logo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={side.logo}
+                      alt=""
+                      aria-hidden
+                      className="h-8 w-8 shrink-0 rounded-full object-cover md:h-10 md:w-10"
+                    />
+                  ) : null}
+                  <span className="line-clamp-2 text-[13px] font-semibold leading-tight md:text-[18px]">
+                    {side.name}
+                  </span>
+                </div>
+                <p className="num mt-2 text-[26px] font-extrabold leading-none md:text-[34px]">
+                  {formatPoints(side.total)}
+                </p>
+                <p className="label mt-1">
+                  {side.points} {side.points === 1 ? "pt" : "pts"}
+                </p>
+              </div>
+            ))}
+
+            <div className="order-2 shrink-0 px-1 text-center">
+              <p className="num text-[26px] font-extrabold leading-none md:text-[44px]">
+                {data.result || "–"}
+              </p>
+              <p className="label mt-1.5">
+                {t("mw.title", { n: data.matchweek })}
+              </p>
+            </div>
           </div>
         </Reveal>
       </section>
 
       <section className="pt-10">
         <Section title={t("pitch.lineups")} hint={t("pitch.starting")} />
-        <div className="gutter mt-5 grid gap-5 lg:grid-cols-2">
+        {/* Two-up at every width: the point of this screen is comparison. */}
+        <div className="gutter mt-5 grid grid-cols-2 gap-2 sm:gap-4 md:gap-5">
           <LineupPitch side={data.home} />
           <LineupPitch side={data.away} />
         </div>

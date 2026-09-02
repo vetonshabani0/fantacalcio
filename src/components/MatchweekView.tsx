@@ -92,15 +92,13 @@ function Fixtures({
         const awayWon = ag > hg;
 
         return (
-          <div
+          <Link
             key={`${f.homeTeamId}-${f.awayTeamId}`}
+            href={`/lega-pubblica/${alias}/giornata/${f.matchweek}/${f.homeTeamId}/${f.awayTeamId}`}
             style={{ animationDelay: `${i * 0.05}s` }}
-            className="reveal grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-[var(--line)] bg-ground-2 p-3.5 md:gap-4 md:p-4"
+            className="tap reveal grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-[var(--line)] bg-ground-2 p-3.5 transition-colors hover:border-white/25 md:gap-4 md:p-4"
           >
-            <Link
-              href={`/lega-pubblica/${alias}/squadra/${home.teamId}`}
-              className="tap flex min-w-0 items-center gap-2.5"
-            >
+            <span className="flex min-w-0 items-center gap-2.5">
               <TeamBadge logo={home.logo} name={home.name} size="sm" />
               <span className="min-w-0">
                 <span
@@ -112,26 +110,18 @@ function Fixtures({
                   {formatTotal(hp)}
                 </span>
               </span>
-            </Link>
+            </span>
 
-            <Link
-              href={`/lega-pubblica/${alias}/giornata/${f.matchweek}/${f.homeTeamId}/${f.awayTeamId}`}
-              className="tap shrink-0 text-center"
-            >
+            <span className="shrink-0 text-center">
               <span className="num block text-[20px] font-extrabold md:text-[24px]">
                 {hg}
                 <span className="px-1.5 text-faint">–</span>
                 {ag}
               </span>
-              <span className="label !text-[8.5px] !text-acid">
-                {tLabel}
-              </span>
-            </Link>
+              <span className="label !text-[8.5px] !text-acid">{tLabel}</span>
+            </span>
 
-            <Link
-              href={`/lega-pubblica/${alias}/squadra/${away.teamId}`}
-              className="tap flex min-w-0 flex-row-reverse items-center gap-2.5"
-            >
+            <span className="flex min-w-0 flex-row-reverse items-center gap-2.5">
               <TeamBadge logo={away.logo} name={away.name} size="sm" />
               <span className="min-w-0 text-right">
                 <span
@@ -143,8 +133,8 @@ function Fixtures({
                   {formatTotal(ap)}
                 </span>
               </span>
-            </Link>
-          </div>
+            </span>
+          </Link>
         );
       })}
     </div>
