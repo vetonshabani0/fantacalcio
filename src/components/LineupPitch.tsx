@@ -1,8 +1,8 @@
 "use client";
 
 import type { LineupSlot, MatchSide } from "@/lib/fanta/official";
-import { Crest } from "./Crest";
 import { useT } from "./LocaleProvider";
+import { PlayerCard } from "./PlayerCard";
 import { formatPoints } from "./ui";
 
 type Side = MatchSide & { name: string; logo: string | null };
@@ -43,59 +43,6 @@ function rowsFor(side: Side): LineupSlot[][] {
   return rows.filter((r) => r.length);
 }
 
-function Shirt({ slot, index }: { slot: LineupSlot; index: number }) {
-  const t = useT();
-  const value = slot.score;
-  const strong = value != null && value >= 7;
-  const weak = value != null && value < 6;
-  const dropped = !slot.counted;
-
-  return (
-    <div
-      className="pop flex min-w-0 flex-1 flex-col items-center gap-1"
-      style={{ animationDelay: `${0.03 * index}s` }}
-    >
-      <div
-        title={
-          slot.swappedWith
-            ? slot.status === "out"
-              ? t("pitch.subOff", { name: slot.swappedWith })
-              : t("pitch.subOn", { name: slot.swappedWith })
-            : undefined
-        }
-        className={`relative grid h-7 w-7 place-items-center rounded-full border sm:h-9 sm:w-9 md:h-11 md:w-11 ${
-          dropped
-            ? "border-dashed border-white/25 bg-transparent text-faint"
-            : strong
-              ? "border-acid bg-acid text-ground"
-              : weak
-                ? "border-flare/40 bg-flare/[0.09] text-flare/90"
-                : "border-white/25 bg-ground-3 text-ink"
-        }`}
-      >
-        <span className="num text-[10px] font-extrabold sm:text-[12px] md:text-[13px]">
-          {value != null ? formatPoints(value) : "–"}
-        </span>
-        {slot.status === "out" ? (
-          <span className="absolute -right-1 -top-1 grid h-[13px] w-[13px] place-items-center rounded-full bg-flare text-[8px] font-black leading-none text-ground sm:h-[15px] sm:w-[15px] sm:text-[9px]">
-            ↓
-          </span>
-        ) : null}
-      </div>
-      <span className="flex w-full items-center justify-center gap-1">
-        {slot.clubId ? (
-          <span className="hidden sm:inline-flex">
-            <Crest teamId={slot.clubId} teamName={slot.club} size="sm" eager />
-          </span>
-        ) : null}
-        <span className="truncate text-[8px] leading-tight text-mute sm:text-[9.5px] md:text-[10.5px]">
-          {slot.name}
-        </span>
-      </span>
-    </div>
-  );
-}
-
 export function LineupPitch({ side }: { side: Side }) {
   const t = useT();
   const rows = rowsFor(side);
@@ -128,9 +75,9 @@ export function LineupPitch({ side }: { side: Side }) {
 
         <div className="relative flex flex-col-reverse gap-4 px-2 py-6 md:gap-5 md:px-3 md:py-7">
           {rows.map((row, i) => (
-            <div key={i} className="flex items-start justify-center gap-0.5 sm:gap-1 md:gap-2">
+            <div key={i} className="flex items-start justify-center gap-1 sm:gap-1.5 md:gap-2">
               {row.map((slot) => (
-                <Shirt key={slot.playerId} slot={slot} index={index++} />
+                <PlayerCard key={slot.playerId} slot={slot} index={index++} />
               ))}
             </div>
           ))}
