@@ -329,6 +329,14 @@ const it = {
   "cal.remove": "Rimuovi calendario",
   "cal.stored": "Calendario caricato",
   "cal.vs": "vs",
+  "cal.orSignIn": "Oppure prendilo dal tuo account",
+  "cal.fromAccount": "Importa dal mio account",
+  "cal.fetching": "Recupero dal tuo account…",
+  "cal.needSignIn": "Accedi con il tuo account Fantacalcio per usare questa opzione.",
+  "cal.signIn": "Accedi",
+  "cal.sourceApi": "Preso dall'API della lega.",
+  "cal.sourceExcel": "Preso dal calendario ufficiale della lega.",
+  "cal.twoWays": "Due modi, stesso risultato: carica il file oppure accedi e lo prendo io.",
 } as const;
 
 export type TranslationKey = keyof typeof it;
@@ -625,6 +633,14 @@ const en: Record<TranslationKey, string> = {
   "cal.remove": "Remove calendar",
   "cal.stored": "Calendar loaded",
   "cal.vs": "vs",
+  "cal.orSignIn": "Or take it from your account",
+  "cal.fromAccount": "Import from my account",
+  "cal.fetching": "Fetching from your account…",
+  "cal.needSignIn": "Sign in with your Fantacalcio account to use this option.",
+  "cal.signIn": "Sign in",
+  "cal.sourceApi": "Taken from the league API.",
+  "cal.sourceExcel": "Taken from the league's official calendar.",
+  "cal.twoWays": "Two ways, same result: upload the file, or sign in and I fetch it.",
 };
 
 export const DICTIONARIES = { it, en } satisfies Record<

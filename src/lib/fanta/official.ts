@@ -356,3 +356,54 @@ export async function getLeagueTeams(
 ): Promise<unknown> {
   return apiGet<unknown>("/onboarding/v1/league/teams", league.jwt, cookie);
 }
+
+/* --------------------------------------------------- calendar, signed in */
+
+/**
+ * The calendar export, fetched with the member's own session.
+ *
+ * This is the same file the "Scarica ora" button downloads. Anonymous callers
+ * get `AD05` from it, but a signed-in session is accepted, so a logged-in user
+ * never has to download and re-upload anything by hand.
+ */
+export async function downloadCalendarExcel(
+  league: OfficialLeague,
+  competitionId: number,
+  competitionName: string,
+  cookie: string,
+): Promise<ArrayBuffer | null> {
+  const query = new URLSearchParams({
+    alias_lega: league.alias,
+    id_competizione: String(competitionId),
+    nome_competizione: competitionName,
+  });
+
+  const response = await fetch(
+    `${LEGACY_BASE}/v1_legheCompetizione/excel?${query}`,
+    {
+      headers: { ...baseHeaders(), ...(cookie ? { cookie } : {}) },
+      cache: "no-store",
+    },
+  ).catch(() => null);
+
+  if (!response?.ok) return null;
+
+  // The service answers with JSON, not a spreadsheet, when it refuses.
+  const type = response.headers.get("content-type") ?? "";
+  if (type.includes("json")) return null;
+
+  return response.arrayBuffer();
+}
+
+/** The calendar as JSON, if the newer API will serve it for this league. */
+export async function getCalendarJson(
+  league: OfficialLeague,
+  competitionId: number,
+  cookie: string,
+): Promise<unknown | null> {
+  return apiGet<unknown>(
+    `/onboarding/v1/league/competition/calendar/${competitionId}`,
+    league.jwt,
+    cookie,
+  ).catch(() => null);
+}

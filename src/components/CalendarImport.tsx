@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import type { ImportedFixture } from "@/lib/fanta/calendar-import";
 import { clearCalendar, saveCalendar } from "@/lib/calendar-storage";
 import { useT } from "./LocaleProvider";
@@ -19,6 +20,45 @@ export function CalendarImport({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((b: { signedIn?: boolean }) => setSignedIn(!!b.signedIn))
+      .catch(() => setSignedIn(false));
+  }, []);
+
+  /** Same result as the upload, fetched with the member's own session. */
+  async function fromAccount() {
+    setBusy(true);
+    setError(null);
+    setNote(null);
+    try {
+      const res = await fetch(`/api/real/${alias}/calendar`, { method: "POST" });
+      const json = (await res.json()) as {
+        fixtures?: ImportedFixture[];
+        matchweeks?: number;
+        source?: string;
+        error?: string;
+      };
+      if (!res.ok || !json.fixtures?.length) {
+        setError(json.error ?? "Import failed.");
+        return;
+      }
+      saveCalendar(alias, json.fixtures);
+      onChange(json.fixtures);
+      setNote(
+        `${t("cal.imported", { n: json.fixtures.length, w: json.matchweeks ?? 0 })} ${
+          json.source === "api" ? t("cal.sourceApi") : t("cal.sourceExcel")
+        }`,
+      );
+    } catch {
+      setError("Request failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function upload(file: File) {
     setBusy(true);
@@ -97,6 +137,33 @@ export function CalendarImport({
             {t("cal.remove")}
           </button>
         ) : null}
+      </div>
+
+      <div className="mt-5 border-t border-[var(--line)] pt-4">
+        <p className="label">{t("cal.orSignIn")}</p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          {signedIn ? (
+            <button
+              onClick={fromAccount}
+              disabled={busy}
+              className="tap rounded-full border border-acid/45 bg-acid/10 px-4 py-2 text-[13px] font-bold text-acid disabled:opacity-40"
+            >
+              {busy ? t("cal.fetching") : t("cal.fromAccount")}
+            </button>
+          ) : (
+            <>
+              <span className="text-[12px] text-faint">
+                {t("cal.needSignIn")}
+              </span>
+              <Link
+                href="/lega-reale"
+                className="tap label rounded-full border border-[var(--line)] px-3 py-2 hover:!text-ink"
+              >
+                {t("cal.signIn")}
+              </Link>
+            </>
+          )}
+        </div>
       </div>
 
       {note ? <p className="mt-3 text-[13px] text-acid">{note}</p> : null}

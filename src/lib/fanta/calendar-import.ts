@@ -117,3 +117,69 @@ export function parseCalendarWorkbook(
 
   return { fixtures, matchweeks, unmatchedRows: unmatchedRows.slice(0, 10), warnings };
 }
+
+/**
+ * Reads fixtures out of the newer API's JSON calendar.
+ *
+ * Its exact shape is undocumented and differs by competition format, so rather
+ * than assume field names this walks the structure looking for objects that
+ * carry a matchweek and two known team ids.
+ */
+export function parseCalendarJson(
+  payload: unknown,
+  teamIds: number[],
+): ImportedFixture[] {
+  const known = new Set(teamIds);
+  const fixtures: ImportedFixture[] = [];
+  const seen = new Set<string>();
+
+  const matchweekOf = (o: Record<string, unknown>): number | null => {
+    for (const key of ["matchweek", "giornata", "mday", "turno", "round", "g"]) {
+      const v = Number(o[key]);
+      if (Number.isFinite(v) && v >= 1 && v <= 60) return v;
+    }
+    return null;
+  };
+
+  const teamsOf = (o: Record<string, unknown>): number[] => {
+    const found: number[] = [];
+    for (const [key, value] of Object.entries(o)) {
+      if (/id|squadra|team|casa|ospite|home|away/i.test(key)) {
+        const n = Number(
+          typeof value === "object" && value
+            ? (value as Record<string, unknown>).id
+            : value,
+        );
+        if (known.has(n) && !found.includes(n)) found.push(n);
+      }
+    }
+    return found;
+  };
+
+  const walk = (node: unknown, inherited: number | null, depth: number) => {
+    if (!node || typeof node !== "object" || depth > 6) return;
+
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, inherited, depth + 1);
+      return;
+    }
+
+    const obj = node as Record<string, unknown>;
+    const mw = matchweekOf(obj) ?? inherited;
+    const pair = teamsOf(obj);
+
+    if (mw != null && pair.length === 2) {
+      const key = `${mw}:${pair[0]}:${pair[1]}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        fixtures.push({ matchweek: mw, homeTeamId: pair[0], awayTeamId: pair[1] });
+      }
+    }
+
+    for (const value of Object.values(obj)) walk(value, mw, depth + 1);
+  };
+
+  walk(payload, null, 0);
+  fixtures.sort((a, b) => a.matchweek - b.matchweek);
+  return fixtures;
+}
