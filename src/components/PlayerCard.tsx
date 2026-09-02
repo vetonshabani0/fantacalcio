@@ -48,7 +48,8 @@ export function PlayerCard({
       <div className={`relative w-full ${dropped ? "opacity-45" : ""}`}>
         <Jersey
           teamId={slot.clubId}
-          className="mx-auto block h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12"
+          goalkeeper={slot.role === "P"}
+          className="mx-auto block h-9 w-9 sm:h-11 sm:w-11 md:h-14 md:w-14"
         />
         {slot.status === "out" ? (
           <span className="absolute -right-0.5 -top-0.5 grid h-[13px] w-[13px] place-items-center rounded-full bg-flare text-[8px] font-black leading-none text-ground sm:h-[15px] sm:w-[15px] sm:text-[9px]">

@@ -1,13 +1,46 @@
 /**
- * Serie A home kits, drawn rather than fetched.
+ * Serie A kits.
  *
- * Neither Fantacalcio CDN publishes club kit images — only crests — so the
- * shirts are generated from each club's colours and pattern. That also keeps the
- * cards fast and dependency-free, and a club with no entry still renders a
- * neutral shirt rather than a hole in the lineup.
+ * Real shirt artwork lives in `public/jerseys`, one outfield and one goalkeeper
+ * image per club. Neither Fantacalcio CDN publishes kit images — only crests —
+ * so these are supplied with the app.
+ *
+ * The colour and pattern table below is the fallback: a club with no artwork,
+ * such as a newly promoted side, still gets a drawn shirt rather than a hole in
+ * the lineup.
  *
  * Ids match the live feed's Serie A team ids.
  */
+
+/** File stem in `public/jerseys`, keyed by Serie A team id. */
+const KIT_SLUG: Record<number, string> = {
+  1: "atalanta",
+  2: "bologna",
+  6: "fiorentina",
+  7: "frosinone",
+  8: "genoa",
+  9: "inter",
+  10: "juventus",
+  11: "lazio",
+  12: "milan",
+  13: "napoli",
+  15: "roma",
+  17: "sassuolo",
+  18: "torino",
+  19: "udinese",
+  21: "cagliari",
+  107: "parma",
+  119: "lecce",
+  138: "venezia",
+  143: "monza",
+  153: "como",
+};
+
+/** Goalkeepers wear the keeper shirt, everyone else the outfield one. */
+export function kitImage(teamId: number, isGoalkeeper: boolean): string | null {
+  const slug = KIT_SLUG[teamId];
+  return slug ? `/jerseys/${slug}-${isGoalkeeper ? "gk" : "home"}.webp` : null;
+}
 
 export type KitPattern = "solid" | "stripes" | "halves" | "hoops" | "sash";
 

@@ -7,3 +7,6 @@ next-env.d.ts
 out
 .vercel
 .vercel
+
+# Source jersey artwork (~80MB). The optimised copies live in public/jerseys.
+/jerseys

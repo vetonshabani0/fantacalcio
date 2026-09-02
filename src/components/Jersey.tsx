@@ -1,7 +1,7 @@
 "use client";
 
-import { useId } from "react";
-import { kitFor, type Kit } from "@/lib/fanta/kits";
+import { useId, useState } from "react";
+import { kitFor, kitImage, type Kit } from "@/lib/fanta/kits";
 
 /** Shirt silhouette: body, both sleeves and a collar notch. */
 const SHIRT =
@@ -76,14 +76,34 @@ function Pattern({ kit }: { kit: Kit }) {
 
 export function Jersey({
   teamId,
+  goalkeeper = false,
   className = "",
 }: {
   teamId: number;
+  goalkeeper?: boolean;
   className?: string;
 }) {
   const kit = kitFor(teamId);
   // Clip paths are document-scoped, so each shirt needs its own id.
   const clipId = useId();
+  const [artworkFailed, setArtworkFailed] = useState(false);
+  const image = kitImage(teamId, goalkeeper);
+
+  if (image && !artworkFailed) {
+    return (
+      // Real shirt artwork; the drawn kit below covers anything missing.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={image}
+        alt=""
+        aria-hidden
+        loading="eager"
+        decoding="async"
+        onError={() => setArtworkFailed(true)}
+        className={`${className} object-contain`}
+      />
+    );
+  }
 
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden focusable="false">
