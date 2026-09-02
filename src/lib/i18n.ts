@@ -348,6 +348,18 @@ const it = {
   "squad.credits": "{n} crediti residui",
   "squad.player2": "Giocatore",
   "squad.notInLeague": "Questa lega non è nel tuo account, quindi la rosa non è visibile.",
+  "pitch.lineups": "Formazioni",
+  "pitch.starting": "Titolari",
+  "pitch.bench": "Panchina",
+  "pitch.subOn": "Entrato per {name}",
+  "pitch.subOff": "Uscito per {name}",
+  "pitch.notCounted": "Non conteggiato",
+  "pitch.total": "Totale",
+  "pitch.module": "Modulo",
+  "pitch.loading": "Carico le formazioni",
+  "pitch.needSignIn": "Accedi con il tuo account per vedere le formazioni.",
+  "pitch.unavailable": "Formazioni non disponibili per questo incontro.",
+  "pitch.open": "Formazioni",
 } as const;
 
 export type TranslationKey = keyof typeof it;
@@ -663,6 +675,18 @@ const en: Record<TranslationKey, string> = {
   "squad.credits": "{n} credits left",
   "squad.player2": "Player",
   "squad.notInLeague": "This league is not in your account, so the squad is not visible.",
+  "pitch.lineups": "Lineups",
+  "pitch.starting": "Starting XI",
+  "pitch.bench": "Bench",
+  "pitch.subOn": "On for {name}",
+  "pitch.subOff": "Off for {name}",
+  "pitch.notCounted": "Not counted",
+  "pitch.total": "Total",
+  "pitch.module": "Formation",
+  "pitch.loading": "Loading lineups",
+  "pitch.needSignIn": "Sign in with your account to see the lineups.",
+  "pitch.unavailable": "Lineups are not available for this fixture.",
+  "pitch.open": "Lineups",
 };
 
 export const DICTIONARIES = { it, en } satisfies Record<

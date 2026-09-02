@@ -37,7 +37,7 @@ function Side({
   return (
     <div className={`flex items-center justify-between gap-2 rounded px-1 ${flash}`}>
       <span className="flex min-w-0 items-center gap-2">
-        <Crest teamId={teamId} teamName={name} size="sm" />
+        <Crest teamId={teamId} teamName={name} size="sm" eager />
         <span
           className={`truncate text-[14px] font-medium ${dim ? "text-mute" : "text-ink"}`}
         >

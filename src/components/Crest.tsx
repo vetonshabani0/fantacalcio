@@ -18,11 +18,14 @@ export function Crest({
   teamName,
   size = "md",
   className = "",
+  eager = false,
 }: {
   teamId: number;
   teamName: string;
   size?: keyof typeof SIZES;
   className?: string;
+  /** Load immediately. Use where there are few crests and they carry meaning. */
+  eager?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const url = crestUrl(teamId);
@@ -47,7 +50,7 @@ export function Crest({
       src={url}
       alt=""
       aria-hidden
-      loading="lazy"
+      loading={eager ? "eager" : "lazy"}
       decoding="async"
       onError={() => setFailed(true)}
       className={`${box} object-contain`}

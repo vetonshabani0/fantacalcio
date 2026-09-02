@@ -72,6 +72,8 @@ function Fixtures({
   entries: MatchweekEntry[];
   alias: string;
 }) {
+  const t = useT();
+  const tLabel = t("pitch.open");
   const byId = new Map(entries.map((e) => [e.teamId, e]));
 
   return (
@@ -112,11 +114,19 @@ function Fixtures({
               </span>
             </Link>
 
-            <div className="num shrink-0 text-center text-[20px] font-extrabold md:text-[24px]">
-              {hg}
-              <span className="px-1.5 text-faint">–</span>
-              {ag}
-            </div>
+            <Link
+              href={`/lega-pubblica/${alias}/giornata/${f.matchweek}/${f.homeTeamId}/${f.awayTeamId}`}
+              className="tap shrink-0 text-center"
+            >
+              <span className="num block text-[20px] font-extrabold md:text-[24px]">
+                {hg}
+                <span className="px-1.5 text-faint">–</span>
+                {ag}
+              </span>
+              <span className="label !text-[8.5px] !text-acid">
+                {tLabel}
+              </span>
+            </Link>
 
             <Link
               href={`/lega-pubblica/${alias}/squadra/${away.teamId}`}

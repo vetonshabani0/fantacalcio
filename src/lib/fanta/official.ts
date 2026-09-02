@@ -573,3 +573,142 @@ export async function getOfficialCalendar(
 
   return out.sort((a, b) => a.matchweek - b.matchweek);
 }
+
+/* ------------------------------------------------------------- lineups */
+
+export interface LineupSlot {
+  playerId: number;
+  name: string;
+  club: string;
+  clubId: number;
+  role: "P" | "D" | "C" | "A";
+  /** Match rating, or null when the player has no vote. */
+  grade: number | null;
+  /** The score that counts towards the team total, when it does. */
+  score: number | null;
+  counted: boolean;
+  /** "played" normally, "out" when replaced, "in" when brought on. */
+  status: "played" | "out" | "in";
+  /** Counterpart in a substitution. */
+  swappedWith: string | null;
+}
+
+export interface MatchSide {
+  teamId: number;
+  formation: string;
+  formationAfterSubs: string;
+  total: number;
+  points: number;
+  starters: LineupSlot[];
+  bench: LineupSlot[];
+}
+
+export interface MatchDetail {
+  matchweek: number;
+  serieAMatchweek: number;
+  calculated: boolean;
+  result: string;
+  home: MatchSide;
+  away: MatchSide;
+}
+
+/** The service marks a slot's score as 100 when it does not count. */
+const NOT_COUNTED = 100;
+/** ...and a missing rating as 56, the same sentinel the live feed uses. */
+const NO_GRADE = 56;
+
+function formatModule(code: string): string {
+  return code && !code.includes("-") ? code.split("").join("-") : code;
+}
+
+function toSlot(
+  raw: Record<string, unknown>,
+  players: Map<number, OfficialPlayer>,
+): LineupSlot {
+  const playerId = Number(raw.pid);
+  const info = players.get(playerId);
+  const grade = Number(raw.scr);
+  const score = Number(raw.cscr);
+  const type = String(raw.ptype ?? "-");
+
+  return {
+    playerId,
+    name: info?.name ?? `#${playerId}`,
+    club: info?.club ?? "",
+    clubId: info?.clubId ?? 0,
+    role: info?.role ?? "C",
+    grade: grade === NO_GRADE || !Number.isFinite(grade) ? null : grade,
+    score: score === NOT_COUNTED || !Number.isFinite(score) ? null : score,
+    counted: score !== NOT_COUNTED && Number.isFinite(score),
+    status: type === "U" ? "out" : type === "E" ? "in" : "played",
+    swappedWith: null,
+  };
+}
+
+function buildSide(
+  raw: Record<string, unknown>,
+  players: Map<number, OfficialPlayer>,
+): MatchSide {
+  const starters = ((raw.starts as Record<string, unknown>[]) ?? []).map((r) =>
+    toSlot(r, players),
+  );
+  const bench = ((raw.bench as Record<string, unknown>[]) ?? []).map((r) =>
+    toSlot(r, players),
+  );
+
+  // Substitutions are reported only as "went out" and "came on" flags, in
+  // order, so the nth departure is matched with the nth arrival.
+  const out = starters.filter((s) => s.status === "out");
+  const inn = bench.filter((s) => s.status === "in");
+  out.forEach((slot, i) => {
+    const replacement = inn[i];
+    if (!replacement) return;
+    slot.swappedWith = replacement.name;
+    replacement.swappedWith = slot.name;
+  });
+
+  return {
+    teamId: Number(raw.tid),
+    formation: formatModule(String(raw.mdl ?? "")),
+    formationAfterSubs: formatModule(String(raw.nmdl ?? raw.mdl ?? "")),
+    total: Number(raw.tot ?? 0),
+    points: Number(raw.points ?? 0),
+    starters,
+    bench,
+  };
+}
+
+/**
+ * One fixture's two lineups, with the ratings the league recorded.
+ *
+ * The team total is the sum of the counted slots: starters whose score stands,
+ * plus each substitute the bench engine brought on. Slots that do not count are
+ * flagged rather than dropped, so a replaced player is still shown.
+ */
+export async function getMatchDetail(
+  league: OfficialLeague,
+  competitionId: number,
+  matchweek: number,
+  serieAMatchweek: number,
+  teamA: number,
+  teamB: number,
+  players: Map<number, OfficialPlayer>,
+  cookie: string,
+): Promise<MatchDetail | null> {
+  const raw = await apiGet<Record<string, unknown>>(
+    `/gaming/v1/teamLineup/${competitionId}/${matchweek}/${serieAMatchweek}/${teamA}/${teamB}`,
+    league.jwt,
+    cookie,
+  ).catch(() => null);
+
+  if (!raw?.home || !raw?.away) return null;
+
+  return {
+    matchweek: Number(raw.mday ?? matchweek),
+    serieAMatchweek: Number(raw.cmday ?? serieAMatchweek),
+    calculated: !!raw.cal,
+    result: String(raw.res ?? ""),
+    home: buildSide(raw.home as Record<string, unknown>, players),
+    away: buildSide(raw.away as Record<string, unknown>, players),
+  };
+}

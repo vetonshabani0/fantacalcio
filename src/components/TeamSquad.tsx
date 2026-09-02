@@ -125,7 +125,7 @@ export function TeamSquad({
               >
                 <Role role={p.role} />
                 <span className="flex min-w-0 flex-1 items-center gap-2">
-                  <Crest teamId={p.clubId} teamName={p.club} size="sm" />
+                  <Crest teamId={p.clubId} teamName={p.club} size="sm" eager />
                   <span className="min-w-0">
                     <span className="block truncate text-[14px] font-medium">
                       {p.name}
