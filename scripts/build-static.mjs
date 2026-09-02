@@ -50,6 +50,7 @@ const DROP = [
   "src/components/PublicTeamView.tsx",
   "src/components/MatchweekView.tsx",
   "src/components/CalendarImport.tsx",
+  "src/components/TeamSquad.tsx",
   "src/lib/calendar-storage.ts",
   "src/lib/fanta/calendar-import.ts",
   "src/components/TeamBadge.tsx",

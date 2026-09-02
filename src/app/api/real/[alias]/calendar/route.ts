@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { currentSession } from "@/lib/auth-session";
-import {
-  parseCalendarJson,
-  parseCalendarWorkbook,
-} from "@/lib/fanta/calendar-import";
+import { parseCalendarWorkbook } from "@/lib/fanta/calendar-import";
 import {
   downloadCalendarExcel,
-  getCalendarJson,
   getCompetitions,
+  getOfficialCalendar,
 } from "@/lib/fanta/official";
 import { fetchPublicLeague } from "@/lib/fanta/public-league";
 
@@ -66,24 +63,38 @@ export async function POST(
 
   const competitionId = competition?.id ?? publicLeague.competitionId;
   const competitionName = competition?.name ?? publicLeague.competitionName;
-  const teamIds = publicLeague.teams.map((t) => t.id);
 
   const attempts: string[] = [];
 
-  const json = await getCalendarJson(league, competitionId, session.cookie);
-  if (json) {
-    const fixtures = parseCalendarJson(json, teamIds);
-    if (fixtures.length) {
-      return NextResponse.json({
-        source: "api",
-        fixtures,
-        matchweeks: new Set(fixtures.map((f) => f.matchweek)).size,
-      });
-    }
-    attempts.push("the API calendar returned nothing recognisable");
-  } else {
-    attempts.push("the API calendar was not available");
+  // The official calendar carries the real pairings and the results the league
+  // recorded, so nothing has to be derived from thresholds.
+  const official = await getOfficialCalendar(
+    league,
+    competitionId,
+    session.cookie,
+  ).catch(() => []);
+
+  if (official.length) {
+    const fixtures = official.map((f) => ({
+      matchweek: f.matchweek,
+      homeTeamId: f.homeTeamId,
+      awayTeamId: f.awayTeamId,
+      ...(f.calculated
+        ? {
+            homeGoals: f.homeGoals,
+            awayGoals: f.awayGoals,
+            homeFantapoints: f.homeFantapoints,
+            awayFantapoints: f.awayFantapoints,
+          }
+        : {}),
+    }));
+    return NextResponse.json({
+      source: "api",
+      fixtures,
+      matchweeks: new Set(fixtures.map((f) => f.matchweek)).size,
+    });
   }
+  attempts.push("the API calendar returned nothing recognisable");
 
   const workbook = await downloadCalendarExcel(
     league,

@@ -407,3 +407,169 @@ export async function getCalendarJson(
     cookie,
   ).catch(() => null);
 }
+
+/* ------------------------------------------------- squads and fixtures */
+
+export interface OfficialTeam {
+  id: number;
+  name: string;
+  manager: string;
+  logo: string | null;
+  /** Player ids owned by this team. */
+  roster: number[];
+  /** Purchase price per roster slot, aligned with `roster`. */
+  costs: number[];
+  creditsLeft: number;
+}
+
+export interface OfficialPlayer {
+  id: number;
+  name: string;
+  /** Serie A club. */
+  club: string;
+  /** Serie A club id, matching the live feed's team ids. */
+  clubId: number;
+  /** Classic role: 1 P, 2 D, 3 C, 4 A. */
+  role: "P" | "D" | "C" | "A";
+  averageGrade: number;
+  averageFantaGrade: number;
+  marketValue: number;
+}
+
+const CLASSIC_ROLE: Record<number, OfficialPlayer["role"]> = {
+  1: "P",
+  2: "D",
+  3: "C",
+  4: "A",
+};
+
+/**
+ * Every team with its squad.
+ *
+ * The roster arrives as a semicolon-joined list of player ids in `cal`, with the
+ * matching purchase prices in `cs`.
+ */
+export async function getLeagueTeamsFull(
+  league: OfficialLeague,
+  cookie: string,
+): Promise<OfficialTeam[]> {
+  const raw = await apiGet<{ data?: Record<string, unknown>[] }>(
+    "/onboarding/v1/league/teams",
+    league.jwt,
+    cookie,
+  );
+
+  const split = (value: unknown): number[] =>
+    String(value ?? "")
+      .split(";")
+      .map((n) => Number(n))
+      .filter((n) => Number.isFinite(n) && n > 0);
+
+  return (raw.data ?? []).map((t) => ({
+    id: Number(t.id),
+    name: String(t.n ?? ""),
+    manager: String(t.nu ?? ""),
+    logo: t.l ? `${LOGO_BASE}${t.l}` : null,
+    roster: split(t.cal),
+    costs: split(t.cs),
+    creditsLeft: Number(t.cr ?? 0),
+  }));
+}
+
+const LOGO_BASE =
+  "https://d2lhpso9w1g8dk.cloudfront.net/web/risorse/squadra_2026/";
+
+/** The league's player database, keyed by player id. */
+export async function getLeaguePlayers(
+  league: OfficialLeague,
+  cookie: string,
+): Promise<Map<number, OfficialPlayer>> {
+  const raw = await apiGet<{ players?: Record<string, unknown>[] }>(
+    "/onboarding/v1/league/players",
+    league.jwt,
+    cookie,
+  );
+
+  const out = new Map<number, OfficialPlayer>();
+  for (const p of raw.players ?? []) {
+    const id = Number(p.id);
+    if (!Number.isFinite(id)) continue;
+    out.set(id, {
+      id,
+      name: String(p.name ?? ""),
+      club: String(p.tname ?? ""),
+      clubId: Number(p.tid ?? 0),
+      role: CLASSIC_ROLE[Number(p.fcrle)] ?? "C",
+      averageGrade: Number(p.agrd ?? 0),
+      averageFantaGrade: Number(p.fagrd ?? 0),
+      marketValue: Number(p.fvmfc ?? 0),
+    });
+  }
+  return out;
+}
+
+export interface OfficialFixture {
+  matchweek: number;
+  serieAMatchweek: number;
+  calculated: boolean;
+  homeTeamId: number;
+  awayTeamId: number;
+  homeFantapoints: number;
+  awayFantapoints: number;
+  homeGoals: number;
+  awayGoals: number;
+  homePoints: number;
+  awayPoints: number;
+}
+
+/**
+ * The official fixture list, with the results the league actually recorded.
+ *
+ * Preferred over deriving anything locally: it carries the real pairings, the
+ * fantasy scores on each side and the goal conversion the league itself applied,
+ * so no thresholds have to be assumed.
+ */
+export async function getOfficialCalendar(
+  league: OfficialLeague,
+  competitionId: number,
+  cookie: string,
+): Promise<OfficialFixture[]> {
+  const raw = await apiGet<unknown>(
+    `/onboarding/v1/league/competition/calendar/${competitionId}`,
+    league.jwt,
+    cookie,
+  );
+
+  const days = Array.isArray(raw) ? raw : [];
+  const out: OfficialFixture[] = [];
+
+  for (const day of days as Record<string, unknown>[]) {
+    const matchweek = Number(day.matchDay ?? 0);
+    if (!matchweek) continue;
+    const serieA = Number(day.championshipMatchDay ?? matchweek);
+    const calculated = !!day.calculated;
+
+    for (const m of (day.matches as Record<string, unknown>[]) ?? []) {
+      // `result` is a plain "3-3"; fall back to zeroes when not yet played.
+      const [gh, ga] = String(m.result ?? "")
+        .split("-")
+        .map((n) => Number(n.trim()));
+
+      out.push({
+        matchweek,
+        serieAMatchweek: serieA,
+        calculated,
+        homeTeamId: Number(m.tIdH),
+        awayTeamId: Number(m.tIdA),
+        homeFantapoints: Number(m.ptH ?? 0),
+        awayFantapoints: Number(m.ptA ?? 0),
+        homeGoals: Number.isFinite(gh) ? gh : 0,
+        awayGoals: Number.isFinite(ga) ? ga : 0,
+        homePoints: Number(m.standingPtH ?? 0),
+        awayPoints: Number(m.standingPtA ?? 0),
+      });
+    }
+  }
+
+  return out.sort((a, b) => a.matchweek - b.matchweek);
+}

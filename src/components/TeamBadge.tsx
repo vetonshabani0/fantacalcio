@@ -24,6 +24,6 @@ export function TeamBadge({
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={logo} alt="" aria-hidden loading="lazy" className={`${box} object-cover`} />
+    <img src={logo} alt="" aria-hidden className={`${box} object-cover`} />
   );
 }

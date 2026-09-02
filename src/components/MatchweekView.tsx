@@ -80,51 +80,57 @@ function Fixtures({
         const home = byId.get(f.homeTeamId);
         const away = byId.get(f.awayTeamId);
         if (!home || !away) return null;
-        const homeWon = home.goals > away.goals;
-        const awayWon = away.goals > home.goals;
+
+        // Prefer the league's own recorded result over anything derived here.
+        const hg = f.homeGoals ?? home.goals;
+        const ag = f.awayGoals ?? away.goals;
+        const hp = f.homeFantapoints ?? home.fantapoints;
+        const ap = f.awayFantapoints ?? away.fantapoints;
+        const homeWon = hg > ag;
+        const awayWon = ag > hg;
 
         return (
           <div
             key={`${f.homeTeamId}-${f.awayTeamId}`}
             style={{ animationDelay: `${i * 0.05}s` }}
-            className="reveal grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl border border-[var(--line)] bg-ground-2 p-4"
+            className="reveal grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-[var(--line)] bg-ground-2 p-3.5 md:gap-4 md:p-4"
           >
             <Link
               href={`/lega-pubblica/${alias}/squadra/${home.teamId}`}
               className="tap flex min-w-0 items-center gap-2.5"
             >
-              <TeamBadge logo={home.logo} name={home.name} size="md" />
+              <TeamBadge logo={home.logo} name={home.name} size="sm" />
               <span className="min-w-0">
                 <span
-                  className={`block truncate text-[14px] font-semibold ${homeWon ? "" : "text-mute"}`}
+                  className={`block text-[13px] font-semibold leading-tight md:text-[14px] ${homeWon ? "" : "text-mute"}`}
                 >
                   {home.name}
                 </span>
                 <span className="num block text-[11px] text-faint">
-                  {formatTotal(home.fantapoints)}
+                  {formatTotal(hp)}
                 </span>
               </span>
             </Link>
 
-            <div className="num shrink-0 text-center text-[24px] font-extrabold">
-              {home.goals}
+            <div className="num shrink-0 text-center text-[20px] font-extrabold md:text-[24px]">
+              {hg}
               <span className="px-1.5 text-faint">–</span>
-              {away.goals}
+              {ag}
             </div>
 
             <Link
               href={`/lega-pubblica/${alias}/squadra/${away.teamId}`}
               className="tap flex min-w-0 flex-row-reverse items-center gap-2.5"
             >
-              <TeamBadge logo={away.logo} name={away.name} size="md" />
+              <TeamBadge logo={away.logo} name={away.name} size="sm" />
               <span className="min-w-0 text-right">
                 <span
-                  className={`block truncate text-[14px] font-semibold ${awayWon ? "" : "text-mute"}`}
+                  className={`block text-[13px] font-semibold leading-tight md:text-[14px] ${awayWon ? "" : "text-mute"}`}
                 >
                   {away.name}
                 </span>
                 <span className="num block text-[11px] text-faint">
-                  {formatTotal(away.fantapoints)}
+                  {formatTotal(ap)}
                 </span>
               </span>
             </Link>

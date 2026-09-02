@@ -21,6 +21,11 @@ export interface ImportedFixture {
   matchweek: number;
   homeTeamId: number;
   awayTeamId: number;
+  /** Present when the source carried the official result, not just the pairing. */
+  homeGoals?: number;
+  awayGoals?: number;
+  homeFantapoints?: number;
+  awayFantapoints?: number;
 }
 
 export interface ImportResult {

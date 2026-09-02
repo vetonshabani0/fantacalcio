@@ -6,6 +6,7 @@ import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { MatchweekRow, PublicTeam } from "@/lib/fanta/public-league";
 import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
+import { TeamSquad } from "./TeamSquad";
 import { Empty, formatTotal, Loading, Reveal, Section } from "./ui";
 
 interface Payload {
@@ -161,6 +162,8 @@ export function PublicTeamView({
           </div>
         </Reveal>
       </section>
+
+      <TeamSquad alias={alias} teamId={teamId} />
 
       <section className="pt-14">
         <Section

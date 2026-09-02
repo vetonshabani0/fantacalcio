@@ -337,6 +337,17 @@ const it = {
   "cal.sourceApi": "Preso dall'API della lega.",
   "cal.sourceExcel": "Preso dal calendario ufficiale della lega.",
   "cal.twoWays": "Due modi, stesso risultato: carica il file oppure accedi e lo prendo io.",
+  "squad.title": "Rosa",
+  "squad.hint": "I 25 giocatori della squadra, con il voto live di Serie A",
+  "squad.needSignIn": "Accedi con il tuo account Fantacalcio per vedere la rosa.",
+  "squad.signIn": "Accedi",
+  "squad.loading": "Carico la rosa",
+  "squad.cost": "Costo",
+  "squad.avg": "Media",
+  "squad.live": "Live",
+  "squad.credits": "{n} crediti residui",
+  "squad.player2": "Giocatore",
+  "squad.notInLeague": "Questa lega non è nel tuo account, quindi la rosa non è visibile.",
 } as const;
 
 export type TranslationKey = keyof typeof it;
@@ -641,6 +652,17 @@ const en: Record<TranslationKey, string> = {
   "cal.sourceApi": "Taken from the league API.",
   "cal.sourceExcel": "Taken from the league's official calendar.",
   "cal.twoWays": "Two ways, same result: upload the file, or sign in and I fetch it.",
+  "squad.title": "Squad",
+  "squad.hint": "All 25 players, with their live Serie A rating",
+  "squad.needSignIn": "Sign in with your Fantacalcio account to see the squad.",
+  "squad.signIn": "Sign in",
+  "squad.loading": "Loading the squad",
+  "squad.cost": "Cost",
+  "squad.avg": "Avg",
+  "squad.live": "Live",
+  "squad.credits": "{n} credits left",
+  "squad.player2": "Player",
+  "squad.notInLeague": "This league is not in your account, so the squad is not visible.",
 };
 
 export const DICTIONARIES = { it, en } satisfies Record<
