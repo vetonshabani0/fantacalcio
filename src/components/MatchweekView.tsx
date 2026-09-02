@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
-import type { MatchweekView as View } from "@/lib/fanta/public-league";
+import type { ImportedFixture } from "@/lib/fanta/calendar-import";
+import { loadCalendar } from "@/lib/calendar-storage";
+import type { MatchweekEntry, MatchweekView as View } from "@/lib/fanta/public-league";
+import { CalendarImport } from "./CalendarImport";
 import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, Reveal, Section } from "./ui";
@@ -58,6 +62,79 @@ function MatchweekRail({
   );
 }
 
+/** Real matchups, once a calendar has been imported. */
+function Fixtures({
+  fixtures,
+  entries,
+  alias,
+}: {
+  fixtures: ImportedFixture[];
+  entries: MatchweekEntry[];
+  alias: string;
+}) {
+  const byId = new Map(entries.map((e) => [e.teamId, e]));
+
+  return (
+    <div className="flex flex-col gap-3">
+      {fixtures.map((f, i) => {
+        const home = byId.get(f.homeTeamId);
+        const away = byId.get(f.awayTeamId);
+        if (!home || !away) return null;
+        const homeWon = home.goals > away.goals;
+        const awayWon = away.goals > home.goals;
+
+        return (
+          <div
+            key={`${f.homeTeamId}-${f.awayTeamId}`}
+            style={{ animationDelay: `${i * 0.05}s` }}
+            className="reveal grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl border border-[var(--line)] bg-ground-2 p-4"
+          >
+            <Link
+              href={`/lega-pubblica/${alias}/squadra/${home.teamId}`}
+              className="tap flex min-w-0 items-center gap-2.5"
+            >
+              <TeamBadge logo={home.logo} name={home.name} size="md" />
+              <span className="min-w-0">
+                <span
+                  className={`block truncate text-[14px] font-semibold ${homeWon ? "" : "text-mute"}`}
+                >
+                  {home.name}
+                </span>
+                <span className="num block text-[11px] text-faint">
+                  {formatTotal(home.fantapoints)}
+                </span>
+              </span>
+            </Link>
+
+            <div className="num shrink-0 text-center text-[24px] font-extrabold">
+              {home.goals}
+              <span className="px-1.5 text-faint">–</span>
+              {away.goals}
+            </div>
+
+            <Link
+              href={`/lega-pubblica/${alias}/squadra/${away.teamId}`}
+              className="tap flex min-w-0 flex-row-reverse items-center gap-2.5"
+            >
+              <TeamBadge logo={away.logo} name={away.name} size="md" />
+              <span className="min-w-0 text-right">
+                <span
+                  className={`block truncate text-[14px] font-semibold ${awayWon ? "" : "text-mute"}`}
+                >
+                  {away.name}
+                </span>
+                <span className="num block text-[11px] text-faint">
+                  {formatTotal(away.fantapoints)}
+                </span>
+              </span>
+            </Link>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function MatchweekView({
   alias,
   matchweek,
@@ -72,6 +149,9 @@ export function MatchweekView({
     `/api/public/${alias}/matchweek/${matchweek}`,
     tick?.version,
   );
+  const [calendar, setCalendar] = useState<ImportedFixture[] | null>(null);
+
+  useEffect(() => setCalendar(loadCalendar(alias)), [alias]);
 
   if (error || data?.error) {
     return (
@@ -145,10 +225,19 @@ export function MatchweekView({
       </Reveal>
 
       <section className="pt-12">
-        <Section title={t("mw.results")} hint={t("mw.noFixtures")} />
+        <Section
+          title={t("mw.results")}
+          hint={calendar ? undefined : t("mw.noFixtures")}
+        />
         <div className="gutter mt-5">
           {!view.settled ? (
             <Empty>{t("mw.notPlayed")}</Empty>
+          ) : calendar ? (
+            <Fixtures
+              fixtures={calendar.filter((f) => f.matchweek === view.matchweek)}
+              entries={view.entries}
+              alias={alias}
+            />
           ) : (
             <>
               <div className="flex items-center gap-3 border-b border-[var(--line)] pb-1.5">
@@ -198,6 +287,14 @@ export function MatchweekView({
               </p>
             </>
           )}
+        </div>
+
+        <div className="gutter mt-6">
+          <CalendarImport
+            alias={alias}
+            hasCalendar={!!calendar}
+            onChange={setCalendar}
+          />
         </div>
       </section>
 

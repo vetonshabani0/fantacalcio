@@ -319,6 +319,16 @@ const it = {
   "mw.goalsNote": "I gol sono calcolati dai fantapunti con la soglia standard: primo gol a 66, poi uno ogni 6.",
   "mw.open": "Apri giornate",
   "mw.loading": "Leggo la giornata",
+  // -------------------------------------------------------- calendar import
+  "cal.title": "Aggiungi il calendario",
+  "cal.why": "Gli accoppiamenti sono l'unico dato senza accesso pubblico. Scarica il calendario dalla tua lega e caricalo qui: resta nel tuo browser, non serve la password.",
+  "cal.how": "Su leghe.fantacalcio.it apri la competizione e premi «Scarica ora», poi carica il file .xlsx qui.",
+  "cal.choose": "Carica il calendario",
+  "cal.parsing": "Leggo il file…",
+  "cal.imported": "{n} incontri importati su {w} giornate.",
+  "cal.remove": "Rimuovi calendario",
+  "cal.stored": "Calendario caricato",
+  "cal.vs": "vs",
 } as const;
 
 export type TranslationKey = keyof typeof it;
@@ -606,6 +616,15 @@ const en: Record<TranslationKey, string> = {
   "mw.goalsNote": "Goals are derived from fantasy points using the standard threshold: first goal at 66, then one every 6.",
   "mw.open": "Browse matchweeks",
   "mw.loading": "Reading the matchweek",
+  "cal.title": "Add the calendar",
+  "cal.why": "Fixtures are the one thing with no public route. Download the calendar from your league and upload it here: it stays in your browser, and no password is needed.",
+  "cal.how": "On leghe.fantacalcio.it open the competition and press \u00abScarica ora\u00bb, then upload the .xlsx file here.",
+  "cal.choose": "Upload calendar",
+  "cal.parsing": "Reading the file…",
+  "cal.imported": "{n} fixtures imported across {w} matchweeks.",
+  "cal.remove": "Remove calendar",
+  "cal.stored": "Calendar loaded",
+  "cal.vs": "vs",
 };
 
 export const DICTIONARIES = { it, en } satisfies Record<
