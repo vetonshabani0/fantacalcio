@@ -74,7 +74,7 @@ export function LeaguePicker({
           matches.map((league, i) => (
             <Reveal key={league.id} delay={i * 0.04}>
               <Link
-                href={`/lega-reale/${league.alias}`}
+                href={`/lega-pubblica/${league.alias}`}
                 className="tap flex items-center gap-4 border-b border-[var(--line-soft)] py-4"
               >
                 <span className="min-w-0 flex-1">

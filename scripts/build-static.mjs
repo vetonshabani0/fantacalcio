@@ -56,7 +56,6 @@ const DROP = [
   "src/components/TeamBadge.tsx",
   "src/components/RealEntry.tsx",
   "src/components/MyLeaguesIntro.tsx",
-  "src/components/RealLeagueView.tsx",
   "src/components/LeaguePicker.tsx",
   "src/components/SignIn.tsx",
   "src/components/DemoButton.tsx",

@@ -1,12 +1,16 @@
-import { RealLeagueView } from "@/components/RealLeagueView";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function RealLeaguePage({
+/**
+ * The signed-in league view used to live here, reading the legacy standings
+ * endpoint through a guessed field mapping. It duplicated the public league
+ * page, which reads the same figures correctly and offers more besides, so this
+ * now sends people there rather than maintaining two views of one thing.
+ */
+export default async function RealLeagueRedirect({
   params,
 }: {
   params: Promise<{ alias: string }>;
 }) {
   const { alias } = await params;
-  return <RealLeagueView alias={alias} />;
+  redirect(`/lega-pubblica/${alias}`);
 }
