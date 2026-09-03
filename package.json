@@ -12,7 +12,8 @@
     "check:feed": "tsx scripts/smoke.mts",
     "check:calendar": "tsx scripts/calendar-check.mts",
     "check:public": "tsx scripts/public-check.mts",
-    "check:estimate": "tsx scripts/public-live-check.mts"
+    "check:estimate": "tsx scripts/public-live-check.mts",
+    "check:table": "tsx scripts/live-table-check.mts"
   },
   "dependencies": {
     "motion": "^13.1.1",

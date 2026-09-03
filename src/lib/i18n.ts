@@ -278,6 +278,7 @@ const it = {
   "pub.team": "Squadra",
   "pub.back": "Cerca un'altra lega",
   "pub.hint": "Cerca la tua lega per nome e guarda la classifica reale, senza accedere.",
+  "pub.settledHint": "Cifre ufficiali, ferme all'ultima giornata calcolata dalla lega",
   // ---------------------------------------------------------- team detail
   "team.back": "Torna alla classifica",
   "team.position": "Posizione",
@@ -343,6 +344,22 @@ const it = {
     "I voti di questa giornata non sono ancora stati pubblicati.",
   "est.forVoid": "senza voto",
   "est.cameOnFor": "per {name}",
+
+  // ---------------------------------------------------------- classifica live
+  "lt.title": "Classifica live",
+  "lt.hint": "Come sarebbe se la giornata {n} finisse adesso",
+  "lt.roundTotal": "Giornata / tot",
+  "lt.vs": "contro {name}",
+  "lt.leadingBy": "avanti di {n}",
+  "lt.needToLead": "{n} per passare",
+  "lt.up": "in salita",
+  "lt.down": "in discesa",
+  "lt.same": "stessa posizione",
+  "lt.legend":
+    "Il numero grande è quanto sta facendo la squadra in questa giornata, sotto il totale di stagione. I punti in verde sono quelli che la giornata vale.",
+  "lt.provisional":
+    "I punti di una giornata dipendono da chi affronti, quindi senza calendario le posizioni non si possono muovere: qui i punti restano quelli ufficiali e solo i fantapunti sono live. Carica il calendario qui sotto per vedere la classifica come sarebbe adesso.",
+  "lt.fixtures": "Scontri diretti, in tempo reale",
   // -------------------------------------------------------- calendar import
   "cal.title": "Aggiungi il calendario",
   "cal.why": "Gli accoppiamenti sono l'unico dato senza accesso pubblico. Scarica il calendario dalla tua lega e caricalo qui: resta nel tuo browser, non serve la password.",
@@ -635,6 +652,7 @@ const en: Record<TranslationKey, string> = {
   "pub.team": "Team",
   "pub.back": "Search another league",
   "pub.hint": "Search your league by name and see the real table, without signing in.",
+  "pub.settledHint": "Official figures, frozen at the last matchweek the league calculated",
   "team.back": "Back to the table",
   "team.position": "Position",
   "team.points": "Points",
@@ -697,6 +715,22 @@ const en: Record<TranslationKey, string> = {
   "est.unavailable": "Ratings for this matchweek have not been published yet.",
   "est.forVoid": "no rating",
   "est.cameOnFor": "for {name}",
+
+  // ---------------------------------------------------------------- live table
+  "lt.title": "Live table",
+  "lt.hint": "Where you would stand if matchweek {n} ended now",
+  "lt.roundTotal": "Round / total",
+  "lt.vs": "vs {name}",
+  "lt.leadingBy": "{n} ahead",
+  "lt.needToLead": "{n} to go ahead",
+  "lt.up": "moving up",
+  "lt.down": "moving down",
+  "lt.same": "unchanged",
+  "lt.legend":
+    "The large number is what the team is scoring this matchweek; the season total sits under it. Points in green are what this round is worth.",
+  "lt.provisional":
+    "What a round is worth depends on who you face, so without the calendar no position can move: points here stay at their official value and only the fantasy points are live. Upload the calendar below to see the table as it stands now.",
+  "lt.fixtures": "Head-to-heads, live",
   "cal.title": "Add the calendar",
   "cal.why": "Fixtures are the one thing with no public route. Download the calendar from your league and upload it here: it stays in your browser, and no password is needed.",
   "cal.how": "On leghe.fantacalcio.it open the competition and press \u00abScarica ora\u00bb, then upload the .xlsx file here.",

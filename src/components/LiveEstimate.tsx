@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import type { EstimatedTeam, LiveEstimate } from "@/lib/fanta/public-live";
 import { Crest } from "./Crest";
@@ -8,7 +7,6 @@ import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import {
   formatPoints,
-  formatTotal,
   LivePip,
   Role,
   Section,
@@ -185,39 +183,5 @@ export function LiveEstimateBoard({ estimate }: { estimate: LiveEstimate }) {
         </p>
       </div>
     </section>
-  );
-}
-
-/** One-line summary of the estimate, for the league landing page. */
-export function LiveEstimateStrip({
-  estimate,
-  href,
-}: {
-  estimate: LiveEstimate;
-  href: string;
-}) {
-  const t = useT();
-  const leader = estimate.teams[0];
-  if (!leader) return null;
-
-  return (
-    <Link
-      href={href}
-      className="tap flex items-center gap-3 rounded-2xl border border-[var(--line)] bg-ground-2 p-4 transition-colors hover:border-[var(--edge)]"
-    >
-      <TeamBadge logo={leader.logo} name={leader.name} size="sm" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-[14px] font-semibold">
-          {leader.name}
-        </span>
-        <span className="block text-[10.5px] text-faint">
-          {t("est.badge")} · {t("mw.title", { n: estimate.matchweek })}
-        </span>
-      </span>
-      <span className="num shrink-0 text-[18px] font-extrabold">
-        {formatTotal(leader.fantapoints)}
-      </span>
-      <span className="shrink-0 text-[13px] text-acid">›</span>
-    </Link>
   );
 }

@@ -82,6 +82,33 @@ a league whose matchweeks the site had already calculated, it lands a mean
 absolute error of **4–6 fantapunti** — under one fantasy goal, which needs 6.
 `pnpm check:estimate` re-runs that comparison against any league you point it at.
 
+### The table, mid-round
+
+Knowing what everyone is scoring is only half of it. What a manager actually
+wants at 4pm on a Sunday is *where they stand now* and *what it would take to
+win*, and `src/lib/fanta/live-table.ts` folds the round in progress into the
+settled table to answer both.
+
+How exact that is depends on one input, and the app says which it is rather than
+blurring them:
+
+- **Fantapoints are always live.** They are additive and belong to a team
+  regardless of who it faces, so a cumulative fantapoints ranking is real even
+  mid-round.
+- **Standings points need the fixtures.** 3/1/0 comes from beating a particular
+  opponent — without the calendar nobody, the official site included, can say
+  what a round in progress is worth. With a calendar imported the table shows
+  where each team would finish if the round ended now, with movement against the
+  position it started from, the live head-to-head score, and the number that
+  matters most: **how many fantapunti away from going ahead** you are.
+
+Without a calendar the points column stays frozen at its official value and the
+panel says so, rather than inventing positions.
+
+`pnpm check:table` proves the arithmetic separately from the guessing: fed the
+figures the league itself published for a settled round, it reproduces that
+league's own table exactly — points, W/D/L, fantapoints and order.
+
 ### Feed quirks worth knowing
 
 - A rating above `10` is a sentinel, not a score: `56` means no vote, `55` means
@@ -133,6 +160,7 @@ pnpm check:feed      # fetch the live feed and print scores, votes and subs
 pnpm check:calendar  # verify round-robin generation
 pnpm check:public    # read a real league with no sign-in
 pnpm check:estimate  # score the public squads and compare with what the league recorded
+pnpm check:table     # fold a round into the table and check it against the official one
 pnpm build           # production build
 ```
 

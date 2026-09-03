@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { ImportedFixture } from "@/lib/fanta/calendar-import";
 import { loadCalendar } from "@/lib/calendar-storage";
 import type { MatchweekEntry, MatchweekView as View } from "@/lib/fanta/public-league";
+import { buildLiveTable } from "@/lib/fanta/live-table";
 import type { LiveEstimate } from "@/lib/fanta/public-live";
 import { CalendarImport } from "./CalendarImport";
 import { LiveEstimateBoard } from "./LiveEstimate";
+import { LiveTableBoard } from "./LiveTable";
 import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, Reveal, Section } from "./ui";
@@ -163,6 +165,43 @@ export function MatchweekView({
 
   useEffect(() => setCalendar(loadCalendar(alias)), [alias]);
 
+  const estimate = data?.estimate ?? null;
+  const roundFixtures = useMemo(
+    () =>
+      calendar?.filter((f) => f.matchweek === data?.view.matchweek) ?? null,
+    [calendar, data?.view.matchweek],
+  );
+
+  // The settled table underneath the round is the league's own; only the round
+  // on top of it is reconstructed.
+  const liveTable = useMemo(
+    () =>
+      estimate && data
+        ? buildLiveTable(
+            data.view.tableAfter,
+            estimate.teams,
+            roundFixtures,
+            data.view.matchweek,
+          )
+        : null,
+    [estimate, data, roundFixtures],
+  );
+
+  /** The live round rendered in the same shape the settled results use. */
+  const liveEntries = useMemo<MatchweekEntry[]>(
+    () =>
+      (estimate?.teams ?? []).map((team) => ({
+        teamId: team.teamId,
+        name: team.name,
+        logo: team.logo,
+        fantapoints: team.fantapoints,
+        goals: team.goals,
+        points: 0,
+        result: "N" as const,
+      })),
+    [estimate],
+  );
+
   if (error || data?.error) {
     return (
       <section className="gutter pt-16">
@@ -241,9 +280,17 @@ export function MatchweekView({
         />
         <div className="gutter mt-5">
           {!view.settled ? (
-            <Empty>
-              {data.estimate ? t("est.pending") : t("mw.notPlayed")}
-            </Empty>
+            // A round in play has no published results, but with the fixtures
+            // to hand its head-to-heads can still be shown as they stand.
+            estimate && roundFixtures?.length ? (
+              <Fixtures
+                fixtures={roundFixtures}
+                entries={liveEntries}
+                alias={alias}
+              />
+            ) : (
+              <Empty>{estimate ? t("est.pending") : t("mw.notPlayed")}</Empty>
+            )
           ) : calendar ? (
             <Fixtures
               fixtures={calendar.filter((f) => f.matchweek === view.matchweek)}
@@ -310,7 +357,9 @@ export function MatchweekView({
         </div>
       </section>
 
-      {data.estimate ? <LiveEstimateBoard estimate={data.estimate} /> : null}
+      {liveTable ? <LiveTableBoard table={liveTable} /> : null}
+
+      {estimate ? <LiveEstimateBoard estimate={estimate} /> : null}
 
       {view.settled ? (
         <section className="pt-14">

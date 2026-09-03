@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
+import { loadCalendar } from "@/lib/calendar-storage";
+import type { ImportedFixture } from "@/lib/fanta/calendar-import";
+import { buildLiveTable } from "@/lib/fanta/live-table";
 import type { PublicLeague } from "@/lib/fanta/public-league";
 import type { LiveEstimate } from "@/lib/fanta/public-live";
-import { LiveEstimateStrip } from "./LiveEstimate";
+import { LiveTableBoard } from "./LiveTable";
 import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, LivePip, Reveal, Section } from "./ui";
@@ -24,6 +28,22 @@ export function PublicLeagueView({ alias }: { alias: string }) {
     `/api/public/${alias}`,
     tick?.version,
   );
+  const [calendar, setCalendar] = useState<ImportedFixture[] | null>(null);
+
+  useEffect(() => setCalendar(loadCalendar(alias)), [alias]);
+
+  // The standings the page already shows are the league's own, settled figures,
+  // which is exactly the base the round in progress has to be added to.
+  const liveTable = useMemo(() => {
+    const estimate = data?.estimate;
+    if (!estimate || !data) return null;
+    return buildLiveTable(
+      data.league.teams.map((team) => ({ ...team, teamId: team.id })),
+      estimate.teams,
+      calendar?.filter((f) => f.matchweek === estimate.matchweek) ?? null,
+      estimate.matchweek,
+    );
+  }, [data, calendar]);
 
   if (error || data?.error) {
     return (
@@ -78,21 +98,14 @@ export function PublicLeagueView({ alias }: { alias: string }) {
           <p className="mt-1.5 text-[11px] text-acid">{t("pub.noLogin")}</p>
         </Reveal>
 
-        {data.estimate ? (
-          <Reveal delay={0.08}>
-            <div className="mt-7">
-              <LiveEstimateStrip
-                estimate={data.estimate}
-                href={`/lega-pubblica/${league.alias}/giornata/${data.estimate.matchweek}`}
-              />
-            </div>
-          </Reveal>
-        ) : null}
       </section>
+
+      {liveTable ? <LiveTableBoard table={liveTable} /> : null}
 
       <section className="pt-10">
         <Section
           title={t("pub.standings")}
+          hint={liveTable ? t("pub.settledHint") : undefined}
           right={
             <Link
               href={`/lega-pubblica/${league.alias}/giornata/${league.currentMatchweek}`}
