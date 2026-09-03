@@ -9,28 +9,39 @@ Two sources, both public, neither needing an account.
 
 ### Real leagues, without signing in
 
-The authenticated API refuses anonymous callers — `apileague.fantacalcio.it`
-answers `ATH008 Bearer token missing`, and `/servizi/v1_leghe*` answers `AD05` —
-and there is no league-search endpoint anywhere. It is tempting to conclude that
-league data is unreachable without credentials. It is not.
+Most of the authenticated API refuses anonymous callers — `apileague.fantacalcio.it`
+answers `ATH008 Bearer token missing`, and most of `/servizi/v1_leghe*` answers
+`AD05`. It is tempting to conclude that league data is unreachable without
+credentials. It is not.
 
-The legacy web pages are still served, and three of them are public:
+The legacy web pages are still served, and two of them are public:
 
 | Page | What it gives away |
 | --- | --- |
-| `/{alias}/squadre` | the entire competition as JSON in a `currentCompetition` config block, **including the full standings** |
-| `/{alias}/info-squadra?t={id}` | one team's name and badge, in OpenGraph meta tags |
+| `/{alias}/squadre` | the entire competition as JSON in a `currentCompetition` config block — **the full standings** — plus every team's name, manager and badge, base64-encoded in `__.s('lt', __.dp('…'))` |
+| `/{alias}/info-squadra?t={id}` | one team's name and badge, in OpenGraph meta tags. Only a fallback now |
 | `/{alias}/classifica` | nothing — it redirects to the login wall |
 
-So the standings come from the page that appears to be about squads, and the
-team names come one request at a time from the per-team pages, because the
-squads page renders its cards client-side from Handlebars templates and its
-markup carries only ids.
+So the standings come from the page that appears to be about squads. The team
+names look absent from it, because the page renders its cards client-side from
+Handlebars templates and the markup carries only ids — but the data those
+templates consume is on the page all along, in the encoded blob. The same blob
+that carries the names has its `cal` roster field blanked for anonymous callers,
+which is the one deliberate redaction.
 
-Leagues are also discoverable by name: `/{alias}/classifica` redirects to
-`/{alias}` for a league that exists and to `/404` for one that does not, which
-makes a credential-free existence check. Aliases are slugs of the league name,
-so slugifying a search term and probing a few common shapes finds a league.
+A handful of legacy services also answer on the app key their own JavaScript
+ships, with no session behind it:
+
+| Service | What it returns |
+| --- | --- |
+| `V1_LegheStatistiche/Statistiche` | a line per **owned player** for one team — the roster, spelled as season statistics |
+| `V1_LegheStatistiche/Confronto` | per-matchweek points and fantapoints for a team |
+| `v1_leghe/leghepubbliche` | the site's own public-league directory, searchable by name |
+
+Leagues are discoverable two ways. The directory above covers leagues that opted
+into being listed; everything else is guessed, since an alias is a slug of the
+league's name and `/{alias}/classifica` redirects to `/{alias}` for a league that
+exists and to `/404` for one that does not — a credential-free existence check.
 
 `src/lib/fanta/public-league.ts` implements all of this.
 
@@ -48,8 +59,28 @@ every bonus/malus event with its minute, who came on for whom, and the live scor
 and status of all ten fixtures. Season `21` is 2026/27. `src/lib/fanta/decode.ts`
 documents the wire format, reverse engineered from the official client bundle.
 
-Signing in with your own account remains supported, and is the only way to read
-a league that exposes nothing publicly.
+Signing in with your own account remains supported. It is the only way to read a
+league that exposes nothing publicly, and the only way to see what each player
+cost and who actually played whom.
+
+### The live score of a round nobody has calculated yet
+
+Two things stay behind the login wall, verified endpoint by endpoint: the
+**calendar** (`v1_legheCompetizione/calendario`, `ClassificaGiornate`, the Excel
+export and the `apileague` calendar all answer `AD05`/`ATH008`) and the
+**lineups** (`V1_LegheFormazioni/*`, and `V1_LegheLive/*` with them). A league's
+in-progress matchweek therefore has no public figures at all.
+
+It can be rebuilt anyway. The squads are public, the Serie A ratings are public,
+and `src/lib/fanta/public-live.ts` puts them together: it fields each squad the
+way the site fields one nobody set — ranked by the feed's probable-lineup
+percentage, ties broken by season form, never by the rating a player ended up
+with — then applies the substitution rules and the defence modifier.
+
+The result is an estimate and is labelled as one everywhere it appears. Against
+a league whose matchweeks the site had already calculated, it lands a mean
+absolute error of **4–6 fantapunti** — under one fantasy goal, which needs 6.
+`pnpm check:estimate` re-runs that comparison against any league you point it at.
 
 ### Feed quirks worth knowing
 
@@ -80,7 +111,10 @@ Fantacalcio Classic rules, all configurable per league in `src/lib/fanta/rules.t
 
 Lineups you have not set are filled automatically, ranked by the probable-lineup
 percentage and never by the rating a player ended up with. Picking by rating
-would be hindsight and the bench would never be needed.
+would be hindsight and the bench would never be needed. When a lineup is being
+guessed rather than filled — reconstructing a real league's live score — season
+form breaks ties within a role, which is also knowable before kickoff and cuts
+the error by about a third.
 
 ## Running it
 
@@ -97,6 +131,8 @@ Leagues are stored as JSON under `.data/leagues/`, one file per league code.
 ```bash
 pnpm check:feed      # fetch the live feed and print scores, votes and subs
 pnpm check:calendar  # verify round-robin generation
+pnpm check:public    # read a real league with no sign-in
+pnpm check:estimate  # score the public squads and compare with what the league recorded
 pnpm build           # production build
 ```
 

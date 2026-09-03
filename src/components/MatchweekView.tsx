@@ -7,7 +7,9 @@ import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { ImportedFixture } from "@/lib/fanta/calendar-import";
 import { loadCalendar } from "@/lib/calendar-storage";
 import type { MatchweekEntry, MatchweekView as View } from "@/lib/fanta/public-league";
+import type { LiveEstimate } from "@/lib/fanta/public-live";
 import { CalendarImport } from "./CalendarImport";
+import { LiveEstimateBoard } from "./LiveEstimate";
 import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, Reveal, Section } from "./ui";
@@ -15,6 +17,8 @@ import { Empty, formatTotal, Loading, Reveal, Section } from "./ui";
 interface Payload {
   league: { alias: string; competitionName: string };
   view: View;
+  /** Present only while the league has not calculated this matchweek. */
+  estimate: LiveEstimate | null;
   error?: string;
 }
 
@@ -237,7 +241,9 @@ export function MatchweekView({
         />
         <div className="gutter mt-5">
           {!view.settled ? (
-            <Empty>{t("mw.notPlayed")}</Empty>
+            <Empty>
+              {data.estimate ? t("est.pending") : t("mw.notPlayed")}
+            </Empty>
           ) : calendar ? (
             <Fixtures
               fixtures={calendar.filter((f) => f.matchweek === view.matchweek)}
@@ -303,6 +309,8 @@ export function MatchweekView({
           />
         </div>
       </section>
+
+      {data.estimate ? <LiveEstimateBoard estimate={data.estimate} /> : null}
 
       {view.settled ? (
         <section className="pt-14">

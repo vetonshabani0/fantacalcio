@@ -6,18 +6,33 @@
  *
  *   /{alias}/squadre          embeds the whole competition — including the full
  *                             standings — as JSON in a `currentCompetition`
- *                             config block, rendered server-side.
+ *                             config block, rendered server-side, and every
+ *                             team's name, manager and badge in a base64 blob.
  *   /{alias}/info-squadra?t=  names a single team, with its badge, in OpenGraph
- *                             meta tags.
+ *                             meta tags. Only needed as a fallback now.
  *   /{alias}/classifica       redirects to the login wall, which is why the
  *                             standings are taken from the page above instead.
  *
- * Team names are deliberately fetched one request per team: the squadre page
- * renders its team cards client-side from Handlebars templates, so the names are
- * simply not in its markup, only the ids.
+ * The squadre page renders its team cards client-side from Handlebars templates,
+ * so the visible markup carries only ids — but the data those templates consume
+ * is on the page all along, base64-encoded in `__.s('lt', __.dp('…'))`. Reading
+ * it turns what used to be one request per team into none.
  */
 
+import { round2 } from "./scoring";
+import type { Role } from "./types";
+
 const HOST = "https://leghe.fantacalcio.it";
+
+/** Where the site serves team badges from, when the page does not say. */
+const CREST_BASE =
+  "https://d2lhpso9w1g8dk.cloudfront.net/web/risorse/squadra_2026/";
+
+/**
+ * The key the site's own client ships in its JavaScript. A handful of legacy
+ * services accept it on its own, with no session behind it.
+ */
+const APP_KEY = "ICiELOObd5DF5uJEATi77CRvHiiRuMU0";
 
 const BROWSER_HEADERS = {
   "user-agent":
@@ -29,6 +44,8 @@ const BROWSER_HEADERS = {
 export interface PublicTeam {
   id: number;
   name: string;
+  /** The person running the team. Empty when the page does not say. */
+  manager: string;
   logo: string | null;
   position: number;
   played: number;
@@ -51,6 +68,10 @@ export interface PublicLeague {
   leagueId: number;
   firstMatchweek: number;
   lastMatchweek: number;
+  /** The matchweek the league is currently on, as the site itself reports it. */
+  currentMatchweek: number;
+  /** Serie A matchweek this competition's first matchweek is played on. */
+  serieAStart: number;
   president: string;
   teams: PublicTeam[];
   fetchedAt: number;
@@ -134,6 +155,65 @@ function readString(html: string, key: string): string {
   return match ? match[1] : "";
 }
 
+function readNumber(html: string, key: string, fallback: number): number {
+  const value = Number(readString(html, key));
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+/** Identity of one fantasy team, as the page's own templates receive it. */
+interface TeamCard {
+  name: string;
+  manager: string;
+  logo: string | null;
+}
+
+/** Raw team entry inside the page's base64 team blob. */
+interface RawCard {
+  id: number;
+  n?: string;
+  nu?: string;
+  l?: string;
+}
+
+/**
+ * Every team's name, manager and badge, straight out of the squadre page.
+ *
+ * The page hands its client templates a base64 payload — `__.s('lt', __.dp(…))`
+ * — holding the same team records the authenticated API would return, minus the
+ * rosters and purchase prices, which are blanked for anonymous callers. Teams
+ * without a badge get a `no_logo{n}.png` placeholder rather than an empty field,
+ * so those are mapped back to null.
+ */
+function readTeamCards(html: string): Map<number, TeamCard> {
+  const cards = new Map<number, TeamCard>();
+
+  const encoded = html.match(/__\.s\('lt',\s*__\.dp\('([^']*)'\)\)/)?.[1];
+  if (!encoded) return cards;
+
+  let payload: { data?: RawCard[] };
+  try {
+    payload = JSON.parse(
+      Buffer.from(encoded, "base64").toString("utf8"),
+    ) as { data?: RawCard[] };
+  } catch {
+    return cards;
+  }
+
+  const base = readString(html, "crestsBaseUrl") || CREST_BASE;
+
+  for (const card of payload.data ?? []) {
+    const id = Number(card.id);
+    if (!Number.isFinite(id)) continue;
+    const file = card.l ?? "";
+    cards.set(id, {
+      name: String(card.n ?? "").trim() || `#${id}`,
+      manager: String(card.nu ?? "").trim(),
+      logo: file && !file.startsWith("no_logo") ? `${base}${file}` : null,
+    });
+  }
+  return cards;
+}
+
 /** Team name and badge, from the per-team page's OpenGraph tags. */
 async function fetchTeamIdentity(
   alias: string,
@@ -182,15 +262,22 @@ export async function fetchPublicLeague(
   const rows = competition.squadre ?? [];
   if (rows.length === 0) return null;
 
-  const identities = await Promise.all(
-    rows.map((row) => fetchTeamIdentity(alias, row.id)),
+  // One blob covers every team; only teams it somehow omits cost a request.
+  const cards = readTeamCards(html);
+  const missing = rows.filter((row) => !cards.has(row.id));
+  await Promise.all(
+    missing.map(async (row) => {
+      const identity = await fetchTeamIdentity(alias, row.id);
+      cards.set(row.id, { ...identity, manager: "" });
+    }),
   );
 
   const teams: PublicTeam[] = rows
     .map((row, i) => ({
       id: row.id,
-      name: identities[i].name,
-      logo: identities[i].logo,
+      name: cards.get(row.id)?.name ?? `#${row.id}`,
+      manager: cards.get(row.id)?.manager ?? "",
+      logo: cards.get(row.id)?.logo ?? null,
       position: row.pos ?? i + 1,
       played: row.g ?? 0,
       points: row.p ?? 0,
@@ -213,32 +300,85 @@ export async function fetchPublicLeague(
     leagueId: competition.id_lega ?? 0,
     firstMatchweek: competition.giornata_inizio ?? 1,
     lastMatchweek: competition.giornata_fine ?? 38,
+    currentMatchweek: readNumber(
+      html,
+      "currentTurn",
+      competition.giornata_inizio ?? 1,
+    ),
+    serieAStart: readNumber(html, "competitionStartSerieA", 1),
     president: readString(html, "president"),
     teams,
     fetchedAt: Date.now(),
   };
 }
 
-/**
- * Turns a human league name into candidate aliases and returns those that exist.
- *
- * There is no league directory to search, but aliases are slugs of the league
- * name, so slugifying the query and probing a handful of common shapes finds a
- * league by name in practice.
- */
-export async function searchLeagues(query: string): Promise<string[]> {
-  const slug = query
+function slugify(value: string): string {
+  return value
     .trim()
     .toLowerCase()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
 
+/** How many directory hits are worth resolving for one query. */
+const DIRECTORY_LIMIT = 12;
+
+/**
+ * Names of leagues that list themselves publicly, matched against a query.
+ *
+ * `v1_leghe/leghepubbliche` is the site's own "join a public league" search, and
+ * it answers with only the app key — no session. It returns names rather than
+ * aliases, which is why the results still go through slugification below; what
+ * it buys is a real corpus of league names instead of guessing that the user
+ * typed theirs exactly.
+ */
+async function searchDirectory(query: string): Promise<string[]> {
+  const res = await fetch(
+    `${HOST}/servizi/v1_leghe/leghepubbliche?page=1&limit=${DIRECTORY_LIMIT}`,
+    {
+      method: "PUT",
+      headers: {
+        ...BROWSER_HEADERS,
+        app_key: APP_KEY,
+        "content-type": "application/json",
+      },
+      // Name only: the service also matches on a league's free-text blurb,
+      // which drags in leagues that merely mention the words.
+      body: JSON.stringify({ nome: query }),
+      cache: "no-store",
+    },
+  ).catch(() => null);
+  if (!res?.ok) return [];
+
+  const body = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: { leghe?: { n?: string }[] };
+  } | null;
+  if (!body?.success) return [];
+
+  return (body.data?.leghe ?? [])
+    .map((l) => slugify(String(l.n ?? "")))
+    .filter((s) => s.length > 0);
+}
+
+/**
+ * Turns a human league name into aliases that actually exist.
+ *
+ * Two sources, because neither is enough alone. The public-league directory
+ * knows real league names but answers with names, not aliases, and only covers
+ * leagues that opted into being listed. Private leagues — most of them — are
+ * reachable only by guessing: an alias is a slug of the league's name, so the
+ * query itself is slugified and probed in a few common shapes. Everything from
+ * both sides is existence-checked before it is returned.
+ */
+export async function searchLeagues(query: string): Promise<string[]> {
+  const slug = slugify(query);
   if (!slug) return [];
 
   const year = new Date().getFullYear();
-  const candidates = [
+  const guesses = [
     slug,
     `${slug}-fantacalcio`,
     `fantacalcio-${slug}`,
@@ -250,7 +390,10 @@ export async function searchLeagues(query: string): Promise<string[]> {
     `${slug}-${year}-${year + 1}`,
   ];
 
-  const unique = [...new Set(candidates)];
+  const listed = await searchDirectory(query).catch(() => []);
+
+  // Guesses first: an exact-name league is what the user most likely meant.
+  const unique = [...new Set([...guesses, ...listed])];
   const found = await Promise.all(
     unique.map(async (alias) => ((await leagueExists(alias)) ? alias : null)),
   );
@@ -258,8 +401,6 @@ export async function searchLeagues(query: string): Promise<string[]> {
 }
 
 /* ------------------------------------------------------- matchweek history */
-
-const APP_KEY = "ICiELOObd5DF5uJEATi77CRvHiiRuMU0";
 
 export interface MatchweekRow {
   matchweek: number;
@@ -292,7 +433,8 @@ interface ConfrontoSide {
  * others and getting identical rows. That makes it usable as a per-team feed.
  *
  * Unplayed matchweeks come back as zeroes with `calcolata: false`, so a league's
- * in-progress round has no live figures here; those live behind the login wall.
+ * in-progress round has no figures here at all. Reconstructing that round is
+ * what `public-live.ts` is for.
  */
 export async function fetchHistory(
   leagueId: number,
@@ -333,6 +475,139 @@ export async function fetchHistory(
   });
 
   return { a: side("sq_a", teamA), b: side("sq_b", teamB) };
+}
+
+/* -------------------------------------------------------------- rosters */
+
+export interface PublicRosterPlayer {
+  /** Same id the live Serie A feed uses, so the two join directly. */
+  id: number;
+  name: string;
+  club: string;
+  role: Role;
+  appearances: number;
+  /** Season average rating. */
+  averageGrade: number;
+  /** Season average rating with bonus and malus folded in. */
+  averageFantaGrade: number;
+  goals: number;
+  assists: number;
+  yellowCards: number;
+  redCards: number;
+}
+
+/**
+ * Raw per-player season line.
+ *
+ * Every counter is split in two: `_c` for the player's home Serie A matches and
+ * `_f` for the away ones. The pair has to be summed to get a season figure, and
+ * `vt` alone is already the combined average.
+ */
+interface RawStatLine {
+  id_c: number;
+  n?: string;
+  s?: string;
+  r?: string;
+  g_c?: number;
+  g_f?: number;
+  vt?: number;
+  vt_c?: number;
+  vt_f?: number;
+  b_c?: number;
+  b_f?: number;
+  m_c?: number;
+  m_f?: number;
+  gf_c?: number;
+  gf_f?: number;
+  ass_c?: number;
+  ass_f?: number;
+  amm_c?: number;
+  amm_f?: number;
+  esp_c?: number;
+  esp_f?: number;
+}
+
+const ROLES = new Set<Role>(["P", "D", "C", "A"]);
+
+/**
+ * A fantasy team's whole squad, without signing in.
+ *
+ * The squadre page blanks the `cal` roster field for anonymous callers, and the
+ * roster endpoints all refuse them — but `V1_LegheStatistiche/Statistiche` is
+ * one of the legacy services that answers on the app key alone, and it returns a
+ * line per owned player, including players who have never been fielded. That
+ * makes it the roster, spelled as statistics.
+ *
+ * Its player ids are the live feed's ids, so nothing has to be matched by name.
+ */
+export async function fetchRoster(
+  alias: string,
+  leagueId: number,
+  teamId: number,
+): Promise<PublicRosterPlayer[] | null> {
+  const url =
+    `${HOST}/servizi/V1_LegheStatistiche/Statistiche` +
+    `?alias_lega=${encodeURIComponent(alias)}&id_lega=${leagueId}` +
+    `&id_squadra=${teamId}`;
+
+  const res = await fetch(url, {
+    headers: { ...BROWSER_HEADERS, app_key: APP_KEY },
+    cache: "no-store",
+  }).catch(() => null);
+  if (!res?.ok) return null;
+
+  const body = (await res.json().catch(() => null)) as {
+    success?: boolean;
+    data?: RawStatLine[];
+  } | null;
+  if (!body?.success || !Array.isArray(body.data)) return null;
+
+  const sum = (a: number | undefined, b: number | undefined) =>
+    Number(a ?? 0) + Number(b ?? 0);
+
+  return body.data.map((row) => {
+    const appearances = sum(row.g_c, row.g_f);
+    // Bonus and malus are season totals for each half of the split, not averages.
+    const modifiers = sum(row.b_c, row.b_f) + sum(row.m_c, row.m_f);
+    const ratings =
+      Number(row.vt_c ?? 0) * Number(row.g_c ?? 0) +
+      Number(row.vt_f ?? 0) * Number(row.g_f ?? 0);
+    const role = String(row.r ?? "") as Role;
+
+    return {
+      id: Number(row.id_c),
+      name: String(row.n ?? ""),
+      club: String(row.s ?? ""),
+      role: ROLES.has(role) ? role : "C",
+      appearances,
+      averageGrade: round2(Number(row.vt ?? 0)),
+      averageFantaGrade: appearances
+        ? round2((ratings + modifiers) / appearances)
+        : 0,
+      goals: sum(row.gf_c, row.gf_f),
+      assists: sum(row.ass_c, row.ass_f),
+      yellowCards: sum(row.amm_c, row.amm_f),
+      redCards: sum(row.esp_c, row.esp_f),
+    };
+  });
+}
+
+/** Every team's squad, one request per team. */
+export async function fetchAllRosters(
+  league: PublicLeague,
+): Promise<Map<number, PublicRosterPlayer[]>> {
+  const out = new Map<number, PublicRosterPlayer[]>();
+  await Promise.all(
+    league.teams.map(async (team) => {
+      const roster = await fetchRoster(
+        league.alias,
+        league.leagueId,
+        team.id,
+      ).catch(() => null);
+      if (roster?.length) out.set(team.id, roster);
+    }),
+  );
+  return out;
 }
 
 /* ------------------------------------------------------- matchweek view */
