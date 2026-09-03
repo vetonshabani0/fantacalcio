@@ -1,6 +1,7 @@
 "use client";
 
 import type { LineupSlot, MatchSide } from "@/lib/fanta/official";
+import { Jersey } from "./Jersey";
 import { useT } from "./LocaleProvider";
 import { PlayerCard } from "./PlayerCard";
 import { formatPoints } from "./ui";
@@ -105,9 +106,20 @@ export function LineupPitch({ side }: { side: Side }) {
           {cameOn.map((slot) => (
             <div
               key={slot.playerId}
-              className="flex items-center gap-2 py-1 text-[12px]"
+              className="flex items-center gap-2.5 py-1 text-[12px]"
             >
-              <span className="text-acid">↑</span>
+              {/* Same shirt the pitch uses, so a substitute is read the same
+                  way as the player he came on for. */}
+              <span className="relative shrink-0">
+                <Jersey
+                  teamId={slot.clubId}
+                  goalkeeper={slot.role === "P"}
+                  className="block h-7 w-7"
+                />
+                <span className="absolute -right-0.5 -top-0.5 grid h-[13px] w-[13px] place-items-center rounded-full bg-acid text-[8px] font-black leading-none text-ground">
+                  ↑
+                </span>
+              </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate">{slot.name}</span>
                 {slot.swappedWith ? (
