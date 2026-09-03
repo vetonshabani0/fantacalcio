@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchPublicLeague } from "@/lib/fanta/public-league";
-import { getCurrentSnapshot } from "@/lib/fanta/source";
+import { estimateLive, serieAMatchweekFor } from "@/lib/fanta/public-live";
+import { getCurrentSnapshot, getSnapshot, resolvePointer } from "@/lib/fanta/source";
 
 export const dynamic = "force-dynamic";
 
@@ -23,13 +24,24 @@ export async function GET(
     );
   }
 
+  // The standings above stop at the last calculated matchweek. The current one
+  // is only reconstructible, and only once its ratings start arriving.
+  const live = snapshot?.matches.some((m) => m.state === "live") ?? false;
+  const estimate = await currentEstimate(league).catch(() => null);
+
   return NextResponse.json({
     league,
-    serieA: snapshot
-      ? {
-          matchweek: snapshot.matchweek,
-          live: snapshot.matches.some((m) => m.state === "live"),
-        }
-      : null,
+    serieA: snapshot ? { matchweek: snapshot.matchweek, live } : null,
+    estimate,
   });
+}
+
+async function currentEstimate(
+  league: NonNullable<Awaited<ReturnType<typeof fetchPublicLeague>>>,
+) {
+  const serieA = serieAMatchweekFor(league, league.currentMatchweek);
+  const pointer = await resolvePointer();
+  const snapshot = await getSnapshot(pointer.seasonId, serieA);
+  if (!snapshot || snapshot.players.length === 0) return null;
+  return estimateLive(league, snapshot, league.currentMatchweek);
 }

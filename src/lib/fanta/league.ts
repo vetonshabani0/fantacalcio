@@ -80,23 +80,35 @@ export function buildCalendar(teams: Team[], rounds = 2): Fixture[] {
 /**
  * Picks a starting eleven from a roster, the way a manager would before kickoff.
  *
- * Ranking deliberately uses only the feed's probable-lineup percentage and never
+ * Ranking deliberately uses only what is knowable before the whistle and never
  * the rating a player ended up with. Picking by rating would be hindsight: it
  * would always field players who turned out to play, and the bench would never
  * be needed. Ranking by expectation instead means a starter who does not play
  * genuinely goes unrated, and the substitution engine has to cover for him.
+ *
+ * `quality` is an optional second criterion — a per-player figure standing for
+ * how good the manager rates him, typically his season average fantavoto. It is
+ * a strict tiebreak, never able to outrank the probable-lineup percentage, which
+ * matters most once kickoff resolves that percentage to 0 or 100: from then on
+ * it decides the order within the players who actually started. Without it the
+ * ordering is exactly probability, then shirt position.
  */
 export function autoLineup(
   roster: number[],
   snapshot: LiveSnapshot,
   rules: Ruleset = DEFAULT_RULES,
+  quality?: Map<number, number>,
 ): Lineup {
   const players = roster
     .map((id) => snapshot.byId[id])
     .filter((p): p is LivePlayer => p != null);
 
+  // Scaled so the three criteria stay strictly lexicographic: a percentage point
+  // outweighs any quality gap, and any quality gap outweighs shirt position.
   const rank = (p: LivePlayer): number =>
-    p.startProbability * 100 - p.lineupPosition;
+    p.startProbability * 1e6 +
+    (quality?.get(p.id) ?? 0) * 1e3 -
+    p.lineupPosition;
 
   const byRole: Record<Role, LivePlayer[]> = { P: [], D: [], C: [], A: [] };
   for (const p of players) byRole[p.role].push(p);

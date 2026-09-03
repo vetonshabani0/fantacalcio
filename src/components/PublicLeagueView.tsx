@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { PublicLeague } from "@/lib/fanta/public-league";
+import type { LiveEstimate } from "@/lib/fanta/public-live";
+import { LiveEstimateStrip } from "./LiveEstimate";
 import { useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, LivePip, Reveal, Section } from "./ui";
@@ -10,6 +12,8 @@ import { Empty, formatTotal, Loading, LivePip, Reveal, Section } from "./ui";
 interface Payload {
   league: PublicLeague;
   serieA: { matchweek: number; live: boolean } | null;
+  /** The current matchweek, rebuilt from the squads. Null before kickoff. */
+  estimate: LiveEstimate | null;
   error?: string;
 }
 
@@ -73,6 +77,17 @@ export function PublicLeagueView({ alias }: { alias: string }) {
           </p>
           <p className="mt-1.5 text-[11px] text-acid">{t("pub.noLogin")}</p>
         </Reveal>
+
+        {data.estimate ? (
+          <Reveal delay={0.08}>
+            <div className="mt-7">
+              <LiveEstimateStrip
+                estimate={data.estimate}
+                href={`/lega-pubblica/${league.alias}/giornata/${data.estimate.matchweek}`}
+              />
+            </div>
+          </Reveal>
+        ) : null}
       </section>
 
       <section className="pt-10">
@@ -80,9 +95,7 @@ export function PublicLeagueView({ alias }: { alias: string }) {
           title={t("pub.standings")}
           right={
             <Link
-              href={`/lega-pubblica/${league.alias}/giornata/${
-                serieA?.matchweek ?? 1
-              }`}
+              href={`/lega-pubblica/${league.alias}/giornata/${league.currentMatchweek}`}
               className="tap label rounded-full border border-acid/40 px-3 py-1.5 !text-acid"
             >
               {t("mw.open")}

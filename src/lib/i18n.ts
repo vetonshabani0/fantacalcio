@@ -322,6 +322,27 @@ const it = {
   "mw.goalsNote": "I gol sono calcolati dai fantapunti con la soglia standard: primo gol a 66, poi uno ogni 6.",
   "mw.open": "Apri giornate",
   "mw.loading": "Leggo la giornata",
+
+  // ------------------------------------------------------------- stima live
+  "est.title": "Punteggi in tempo reale",
+  "est.hint": "Stimati dalle rose pubbliche e dai voti di Serie A",
+  "est.badge": "Stima",
+  "est.live": "In gioco",
+  "est.complete": "Giornata finita, in attesa del calcolo della lega",
+  "est.pending":
+    "La lega non ha ancora calcolato questa giornata. Nel frattempo: ogni rosa è pubblica, quindi schiero io gli undici e sommo i voti man mano che arrivano.",
+  "est.how":
+    "Le formazioni non sono pubbliche. Schiero ogni rosa come farebbe il sito quando nessuno la imposta — per probabilità di essere titolare, a parità la media fantavoto — poi applico sostituzioni e modificatore difesa. Non è la formazione ufficiale: è la migliore ricostruzione senza accedere.",
+  "est.rated": "{n}/11 votati",
+  "est.module": "Modulo",
+  "est.subs": "{n} sostituzioni",
+  "est.toNextGoal": "{n} al gol",
+  "est.modifier": "Modificatore {n}",
+  "est.missing": "{n} rose non leggibili",
+  "est.unavailable":
+    "I voti di questa giornata non sono ancora stati pubblicati.",
+  "est.forVoid": "senza voto",
+  "est.cameOnFor": "per {name}",
   // -------------------------------------------------------- calendar import
   "cal.title": "Aggiungi il calendario",
   "cal.why": "Gli accoppiamenti sono l'unico dato senza accesso pubblico. Scarica il calendario dalla tua lega e caricalo qui: resta nel tuo browser, non serve la password.",
@@ -342,7 +363,10 @@ const it = {
   "cal.twoWays": "Due modi, stesso risultato: carica il file oppure accedi e lo prendo io.",
   "squad.title": "Rosa",
   "squad.hint": "I 25 giocatori della squadra, con il voto live di Serie A",
+  "squad.hintPublic": "Rosa e medie stagionali, dai dati pubblici della lega",
   "squad.needSignIn": "Accedi con il tuo account Fantacalcio per vedere la rosa.",
+  "squad.unreadable":
+    "Questa lega non pubblica la rosa di questa squadra. Accedi con il tuo account Fantacalcio per vederla.",
   "squad.signIn": "Accedi",
   "squad.loading": "Carico la rosa",
   "squad.cost": "Costo",
@@ -653,6 +677,26 @@ const en: Record<TranslationKey, string> = {
   "mw.goalsNote": "Goals are derived from fantasy points using the standard threshold: first goal at 66, then one every 6.",
   "mw.open": "Browse matchweeks",
   "mw.loading": "Reading the matchweek",
+
+  // ------------------------------------------------------------- live estimate
+  "est.title": "Live scores",
+  "est.hint": "Estimated from the public squads and the Serie A ratings",
+  "est.badge": "Estimate",
+  "est.live": "In play",
+  "est.complete": "Matchweek over, waiting for the league to calculate it",
+  "est.pending":
+    "The league has not calculated this matchweek yet. In the meantime: every squad is public, so the eleven are picked here and the ratings added up as they land.",
+  "est.how":
+    "Lineups are not public. Each squad is fielded the way the site fields one nobody set — by how likely a player is to start, with season form breaking ties — then substitutions and the defence modifier are applied. This is not the official lineup: it is the closest reconstruction without signing in.",
+  "est.rated": "{n}/11 rated",
+  "est.module": "Formation",
+  "est.subs": "{n} substitutions",
+  "est.toNextGoal": "{n} to a goal",
+  "est.modifier": "Modifier {n}",
+  "est.missing": "{n} squads unreadable",
+  "est.unavailable": "Ratings for this matchweek have not been published yet.",
+  "est.forVoid": "no rating",
+  "est.cameOnFor": "for {name}",
   "cal.title": "Add the calendar",
   "cal.why": "Fixtures are the one thing with no public route. Download the calendar from your league and upload it here: it stays in your browser, and no password is needed.",
   "cal.how": "On leghe.fantacalcio.it open the competition and press \u00abScarica ora\u00bb, then upload the .xlsx file here.",
@@ -672,7 +716,10 @@ const en: Record<TranslationKey, string> = {
   "cal.twoWays": "Two ways, same result: upload the file, or sign in and I fetch it.",
   "squad.title": "Squad",
   "squad.hint": "All 25 players, with their live Serie A rating",
+  "squad.hintPublic": "Squad and season averages, from the league's public data",
   "squad.needSignIn": "Sign in with your Fantacalcio account to see the squad.",
+  "squad.unreadable":
+    "This league does not publish this team's squad. Sign in with your Fantacalcio account to see it.",
   "squad.signIn": "Sign in",
   "squad.loading": "Loading the squad",
   "squad.cost": "Cost",

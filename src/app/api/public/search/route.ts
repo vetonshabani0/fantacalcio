@@ -28,5 +28,9 @@ export async function GET(request: Request) {
     }),
   );
 
-  return NextResponse.json({ results });
+  // A league whose page exists but exposes nothing is a dead end. Worth offering
+  // when it is all there is — the user may still recognise the name — but never
+  // ahead of, or padding out, leagues that can actually be opened.
+  const readable = results.filter((r) => r.readable);
+  return NextResponse.json({ results: readable.length ? readable : results });
 }

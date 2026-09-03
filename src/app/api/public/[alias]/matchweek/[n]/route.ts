@@ -4,6 +4,8 @@ import {
   fetchAllHistories,
   fetchPublicLeague,
 } from "@/lib/fanta/public-league";
+import { estimateLive, serieAMatchweekFor } from "@/lib/fanta/public-live";
+import { getSnapshot, resolvePointer } from "@/lib/fanta/source";
 
 export const dynamic = "force-dynamic";
 
@@ -31,11 +33,36 @@ export async function GET(
     ? Math.min(Math.max(1, requested), league.lastMatchweek)
     : lastSettled;
 
+  const view = buildMatchweekView(league, histories, matchweek);
+
+  // A matchweek the league has not calculated has no public figures at all, so
+  // it is the one worth rebuilding from the squads and the Serie A feed. Once
+  // the league has settled it, its own numbers are the truth and stand alone.
+  const estimate = view.settled
+    ? null
+    : await buildEstimate(league, matchweek).catch(() => null);
+
   return NextResponse.json({
     league: {
       alias: league.alias,
       competitionName: league.competitionName,
     },
-    view: buildMatchweekView(league, histories, matchweek),
+    view,
+    estimate,
   });
+}
+
+async function buildEstimate(
+  league: Awaited<ReturnType<typeof fetchPublicLeague>>,
+  matchweek: number,
+) {
+  if (!league) return null;
+
+  const serieA = serieAMatchweekFor(league, matchweek);
+  const pointer = await resolvePointer();
+  const snapshot = await getSnapshot(pointer.seasonId, serieA);
+  // Nothing to rebuild from before the bucket publishes the matchweek.
+  if (!snapshot || snapshot.players.length === 0) return null;
+
+  return estimateLive(league, snapshot, matchweek);
 }

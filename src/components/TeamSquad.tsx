@@ -27,6 +27,8 @@ interface SquadPlayer {
 }
 
 interface Payload {
+  /** Which reading this was: the league API, or the public statistics service. */
+  source: "league" | "public";
   team: { id: number; name: string; manager: string; creditsLeft: number };
   squad: SquadPlayer[];
   error?: string;
@@ -36,9 +38,10 @@ interface Payload {
 /**
  * The squad behind a fantasy team.
  *
- * Rosters are the one thing the public pages never expose, so this only fills in
- * for a signed-in member of that league; everyone else is told plainly rather
- * than shown an empty list.
+ * Readable without an account: the statistics service returns a line per owned
+ * player, which is the roster in all but name. Signing in adds what that service
+ * does not carry — what each player cost and how many credits are left — so the
+ * league API is still preferred when a session can reach this league.
  */
 export function TeamSquad({
   alias,
@@ -79,7 +82,7 @@ export function TeamSquad({
         <Section title={t("squad.title")} />
         <div className="gutter mt-5 rounded-2xl border border-[var(--line)] bg-ground-2 p-5">
           <p className="text-[13px] leading-relaxed text-mute">
-            {t("squad.needSignIn")}
+            {t("squad.unreadable")}
           </p>
           <Link
             href="/lega-reale"
@@ -96,11 +99,13 @@ export function TeamSquad({
     <section className="pt-14">
       <Section
         title={t("squad.title")}
-        hint={t("squad.hint")}
+        hint={data.source === "public" ? t("squad.hintPublic") : t("squad.hint")}
         right={
-          <span className="label">
-            {t("squad.credits", { n: data.team.creditsLeft })}
-          </span>
+          data.source === "league" ? (
+            <span className="label">
+              {t("squad.credits", { n: data.team.creditsLeft })}
+            </span>
+          ) : null
         }
       />
 
@@ -112,7 +117,9 @@ export function TeamSquad({
             <div className="flex items-center gap-3 border-b border-[var(--line)] pb-1.5">
               <span className="w-3" />
               <span className="label flex-1">{t("squad.player2")}</span>
-              <span className="label w-10 text-right">{t("squad.cost")}</span>
+              {data.source === "league" ? (
+                <span className="label w-10 text-right">{t("squad.cost")}</span>
+              ) : null}
               <span className="label w-10 text-right">{t("squad.avg")}</span>
               <span className="label w-12 text-right">{t("squad.live")}</span>
             </div>
@@ -135,9 +142,11 @@ export function TeamSquad({
                     </span>
                   </span>
                 </span>
-                <span className="num w-10 text-right text-[12px] text-faint">
-                  {p.cost}
-                </span>
+                {data.source === "league" ? (
+                  <span className="num w-10 text-right text-[12px] text-faint">
+                    {p.cost}
+                  </span>
+                ) : null}
                 <span className="num w-10 text-right text-[12px] text-mute">
                   {p.averageFantaGrade ? p.averageFantaGrade.toFixed(1) : "—"}
                 </span>
