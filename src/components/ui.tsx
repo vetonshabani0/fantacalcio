@@ -263,6 +263,12 @@ function useWideViewport(): boolean {
  * the lineup he came from, and tapping the next player just swaps the panel.
  * On a phone there is no room to sit beside anything, so both variants are the
  * same drag-to-dismiss bottom sheet.
+ *
+ * That sheet sits above the bottom tab bar rather than level with it: the bar is
+ * also `z-50` and renders later in the document, so at the same depth it wins
+ * and clips whatever the sheet has at its foot. Its height is a flex column too,
+ * so the scrolling area is however much is left after the header instead of a
+ * constant guessing at it.
  */
 export function Sheet({
   open,
@@ -308,7 +314,7 @@ export function Sheet({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
               onClick={onClose}
-              className="fixed inset-0 z-50 bg-ground/70 backdrop-blur-sm"
+              className="fixed inset-0 z-[60] bg-ground/70 backdrop-blur-sm"
             />
           )}
           <motion.div
@@ -324,12 +330,12 @@ export function Sheet({
             }}
             className={
               docked
-                ? "fixed bottom-0 right-0 top-0 z-50 flex w-[min(420px,40vw)] flex-col overflow-hidden border-l border-[var(--line)] bg-ground-2 shadow-[-18px_0_50px_-24px_rgba(0,0,0,0.45)]"
-                : "fixed inset-x-0 bottom-0 z-50 max-h-[88dvh] overflow-hidden rounded-t-3xl border-t border-[var(--line)] bg-ground-2 md:inset-x-auto md:left-1/2 md:bottom-auto md:top-1/2 md:w-[min(680px,92vw)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border"
+                ? "fixed bottom-0 right-0 top-0 z-[60] flex w-[min(420px,40vw)] flex-col overflow-hidden border-l border-[var(--line)] bg-ground-2 shadow-[-18px_0_50px_-24px_rgba(0,0,0,0.45)]"
+                : "fixed inset-x-0 bottom-0 z-[60] flex max-h-[88dvh] flex-col overflow-hidden rounded-t-3xl border-t border-[var(--line)] bg-ground-2 md:inset-x-auto md:left-1/2 md:bottom-auto md:top-1/2 md:w-[min(680px,92vw)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border"
             }
           >
             {docked ? null : (
-              <div className="flex justify-center pt-2.5 md:hidden">
+              <div className="flex shrink-0 justify-center pt-2.5 md:hidden">
                 <span className="h-1 w-9 rounded-full bg-fill-strong" />
               </div>
             )}
@@ -349,7 +355,7 @@ export function Sheet({
               className={
                 docked
                   ? "min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6"
-                  : "max-h-[calc(88dvh-72px)] overflow-y-auto overscroll-contain pb-[calc(20px+env(safe-area-inset-bottom))]"
+                  : "min-h-0 flex-1 overflow-y-auto overscroll-contain pb-[calc(24px+env(safe-area-inset-bottom))]"
               }
             >
               {children}
