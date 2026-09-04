@@ -7,12 +7,14 @@ import { useLiveData, useLiveVersion } from "@/hooks/useLive";
 import type { ImportedFixture } from "@/lib/fanta/calendar-import";
 import { loadCalendar } from "@/lib/calendar-storage";
 import type { MatchweekEntry, MatchweekView as View } from "@/lib/fanta/public-league";
+import { kickoffDate, MATCH_TIMEZONE } from "@/lib/fanta/format";
 import { buildLiveTable } from "@/lib/fanta/live-table";
 import type { LiveEstimate } from "@/lib/fanta/public-live";
+import type { MatchweekSchedule } from "@/app/api/public/[alias]/matchweek/[n]/route";
 import { CalendarImport } from "./CalendarImport";
 import { LiveEstimateBoard } from "./LiveEstimate";
 import { LiveTableBoard } from "./LiveTable";
-import { useT } from "./LocaleProvider";
+import { intlLocale, useLocale, useT } from "./LocaleProvider";
 import { TeamBadge } from "./TeamBadge";
 import { Empty, formatTotal, Loading, Reveal, Section } from "./ui";
 
@@ -21,7 +23,23 @@ interface Payload {
   view: View;
   /** Present only while the league has not calculated this matchweek. */
   estimate: LiveEstimate | null;
+  /** When the Serie A round behind this matchweek starts. */
+  schedule: MatchweekSchedule | null;
   error?: string;
+}
+
+/** "Fri 4 Sep, 20:45" — the day matters when a round spans four of them. */
+function formatKickoff(value: string | null, locale: string): string {
+  const date = kickoffDate(value);
+  if (!date) return "";
+  return new Intl.DateTimeFormat(locale, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: MATCH_TIMEZONE,
+  }).format(date);
 }
 
 const RESULT_TONE: Record<string, string> = {
@@ -147,6 +165,60 @@ function Fixtures({
   );
 }
 
+/**
+ * The pairings for a round nobody has played yet.
+ *
+ * Deliberately not the same card as a played fixture: there is no score to show
+ * and inventing a 0–0 would read as a result. Just who faces whom, and — from
+ * the Serie A feed, which publishes a round's fixtures long before its ratings —
+ * when it starts.
+ */
+function UpcomingFixtures({
+  fixtures,
+  teams,
+}: {
+  fixtures: ImportedFixture[];
+  teams: Map<number, { name: string; logo: string | null }>;
+}) {
+  const t = useT();
+
+  return (
+    <div className="flex flex-col gap-3">
+      {fixtures.map((f, i) => {
+        const home = teams.get(f.homeTeamId);
+        const away = teams.get(f.awayTeamId);
+        if (!home || !away) return null;
+
+        return (
+          <div
+            key={`${f.homeTeamId}-${f.awayTeamId}`}
+            style={{ animationDelay: `${i * 0.05}s` }}
+            className="reveal grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl border border-[var(--line)] bg-ground-2 p-3.5 md:gap-4 md:p-4"
+          >
+            <span className="flex min-w-0 items-center gap-2.5">
+              <TeamBadge logo={home.logo} name={home.name} size="sm" />
+              <span className="min-w-0 truncate text-[13px] font-semibold leading-tight md:text-[14px]">
+                {home.name}
+              </span>
+            </span>
+
+            <span className="label shrink-0 px-1 text-center !text-faint">
+              {t("mw.versus")}
+            </span>
+
+            <span className="flex min-w-0 flex-row-reverse items-center gap-2.5">
+              <TeamBadge logo={away.logo} name={away.name} size="sm" />
+              <span className="min-w-0 truncate text-right text-[13px] font-semibold leading-tight md:text-[14px]">
+                {away.name}
+              </span>
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function MatchweekView({
   alias,
   matchweek,
@@ -155,6 +227,7 @@ export function MatchweekView({
   matchweek: string;
 }) {
   const t = useT();
+  const { locale } = useLocale();
   const router = useRouter();
   const { tick } = useLiveVersion();
   const { data, error, loading } = useLiveData<Payload>(
@@ -200,6 +273,18 @@ export function MatchweekView({
         result: "N" as const,
       })),
     [estimate],
+  );
+
+  /** Team names and badges for every team, played this round or not. */
+  const teamsById = useMemo(
+    () =>
+      new Map(
+        (data?.view.tableAfter ?? []).map((row) => [
+          row.teamId,
+          { name: row.name, logo: row.logo },
+        ]),
+      ),
+    [data],
   );
 
   if (error || data?.error) {
@@ -275,8 +360,27 @@ export function MatchweekView({
 
       <section className="pt-12">
         <Section
-          title={t("mw.results")}
+          title={view.settled ? t("mw.results") : t("mw.fixturesTitle")}
           hint={calendar ? undefined : t("mw.noFixtures")}
+          right={
+            data.schedule?.firstKickoff ? (
+              <span className="label !text-faint">
+                {t(
+                  data.schedule.complete
+                    ? "mw.ended"
+                    : data.schedule.started
+                      ? "mw.startedAt"
+                      : "mw.startsAt",
+                  {
+                    when: formatKickoff(
+                      data.schedule.firstKickoff,
+                      intlLocale(locale),
+                    ),
+                  },
+                )}
+              </span>
+            ) : null
+          }
         />
         <div className="gutter mt-5">
           {!view.settled ? (
@@ -288,6 +392,16 @@ export function MatchweekView({
                 entries={liveEntries}
                 alias={alias}
               />
+            ) : roundFixtures?.length ? (
+              // Nothing has been played yet, but who faces whom is known.
+              <>
+                <UpcomingFixtures fixtures={roundFixtures} teams={teamsById} />
+                {!data.schedule ? (
+                  <p className="pt-4 text-[11.5px] text-faint">
+                    {t("mw.noSchedule")}
+                  </p>
+                ) : null}
+              </>
             ) : (
               <Empty>{estimate ? t("est.pending") : t("mw.notPlayed")}</Empty>
             )

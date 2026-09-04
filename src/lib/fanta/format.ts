@@ -15,6 +15,26 @@ export function minuteOrder(minute: number): number {
   return minute < 0 ? Math.abs(minute) - 0.5 : minute;
 }
 
+/**
+ * Match timestamps arrive as `2026-09-06T18:45:00`, with no zone marker.
+ *
+ * They are UTC, not Italian wall-clock time, which is easy to get backwards and
+ * costly when you do: reading them as local shows every kickoff two hours early.
+ * The giveaway is the slot distribution — a matchweek's times land on 13:00,
+ * 16:00, 16:30 and 18:45, which are not Serie A slots, while the same times in
+ * Europe/Rome are exactly the canonical 15:00, 18:00, 18:30 and 20:45. The
+ * bucket's own `last-modified` agrees: it stops updating a matchweek's file
+ * about two hours after the last of these, not four.
+ */
+export function kickoffDate(value: string | null | undefined): Date | null {
+  if (!value) return null;
+  const date = new Date(`${value}Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/** Where Serie A kickoff times are quoted, wherever the reader happens to be. */
+export const MATCH_TIMEZONE = "Europe/Rome";
+
 /** The feed writes real formations without separators: "3421" -> "3-4-2-1". */
 export function formatFormation(formation: string): string {
   if (!formation) return "";

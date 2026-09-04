@@ -2,21 +2,20 @@
 
 import { motion } from "motion/react";
 import { useFlash } from "@/hooks/useLive";
+import { kickoffDate, MATCH_TIMEZONE } from "@/lib/fanta/format";
 import type { RealMatch } from "@/lib/fanta/types";
 import { Crest } from "./Crest";
 import { intlLocale, useLocale } from "./LocaleProvider";
 import { MatchState } from "./ui";
 
 export function kickoffLabel(match: RealMatch, locale = "it-IT"): string {
-  if (!match.kickoff) return "";
-  // The feed publishes Italian wall-clock time with no zone marker.
-  const date = new Date(`${match.kickoff}Z`);
-  if (Number.isNaN(date.getTime())) return "";
+  const date = kickoffDate(match.kickoff);
+  if (!date) return "";
   return new Intl.DateTimeFormat(locale, {
     weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: MATCH_TIMEZONE,
   }).format(date);
 }
 

@@ -323,6 +323,12 @@ const it = {
   "mw.goalsNote": "I gol sono calcolati dai fantapunti con la soglia standard: primo gol a 66, poi uno ogni 6.",
   "mw.open": "Apri giornate",
   "mw.loading": "Leggo la giornata",
+  "mw.fixturesTitle": "Gli accoppiamenti",
+  "mw.versus": "contro",
+  "mw.startsAt": "Si comincia {when}",
+  "mw.startedAt": "Iniziata {when}",
+  "mw.ended": "Finita, in attesa del calcolo",
+  "mw.noSchedule": "Il calendario di Serie A per questa giornata non è ancora uscito.",
 
   // ------------------------------------------------------------- stima live
   "est.title": "Punteggi in tempo reale",
@@ -695,6 +701,12 @@ const en: Record<TranslationKey, string> = {
   "mw.goalsNote": "Goals are derived from fantasy points using the standard threshold: first goal at 66, then one every 6.",
   "mw.open": "Browse matchweeks",
   "mw.loading": "Reading the matchweek",
+  "mw.fixturesTitle": "The fixtures",
+  "mw.versus": "vs",
+  "mw.startsAt": "Starts {when}",
+  "mw.startedAt": "Started {when}",
+  "mw.ended": "Over, waiting to be calculated",
+  "mw.noSchedule": "Serie A has not published this matchweek's schedule yet.",
 
   // ------------------------------------------------------------- live estimate
   "est.title": "Live scores",
