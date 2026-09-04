@@ -109,6 +109,20 @@ panel says so, rather than inventing positions.
 figures the league itself published for a settled round, it reproduces that
 league's own table exactly — points, W/D/L, fantapoints and order.
 
+`pnpm check:midround` asks the harder question — not whether the estimate is
+right once everything has been played, but how it reads at 21:00 on a Saturday
+with two matches gone and eight to come. It rewinds a finished round to each
+kickoff in turn and re-runs the estimate at every moment. Totals climb towards
+the final figure, and substitutions churn in the middle before settling at zero,
+because a starter who has not played yet is indistinguishable from one who did
+not play at all until the round ends — the same provisional swap the official
+live view makes.
+
+That replay is also why a team with nothing rated yet is labelled as not started
+rather than shown a deficit: early on a Saturday, half the league sits at zero
+because their players kick off tomorrow, and a live table that reads it as
+losing would be worse than no table.
+
 ### Feed quirks worth knowing
 
 - A rating above `10` is a sentinel, not a score: `56` means no vote, `55` means
@@ -161,6 +175,7 @@ pnpm check:calendar  # verify round-robin generation
 pnpm check:public    # read a real league with no sign-in
 pnpm check:estimate  # score the public squads and compare with what the league recorded
 pnpm check:table     # fold a round into the table and check it against the official one
+pnpm check:midround  # replay a finished round as if it were still being played
 pnpm build           # production build
 ```
 

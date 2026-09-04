@@ -23,6 +23,12 @@ function Verdict({ row }: { row: LiveStandingRow }) {
   const round = row.round;
   if (!round) return null;
 
+  // Nothing has been played: a target to chase would be noise, and a deficit
+  // would be a lie.
+  if (round.ratedSlots === 0) {
+    return <span className="text-faint">{t("lt.notStarted")}</span>;
+  }
+
   if (round.opponent && round.toLead != null) {
     if (round.toLead === 0) {
       return (
@@ -81,6 +87,14 @@ function Row({ row, index }: { row: LiveStandingRow; index: number }) {
             </span>
           ) : null}
           <Verdict row={row} />
+          {/* Without this a team whose players kick off tomorrow reads as
+              losing, rather than as not having started. */}
+          {round && round.ratedSlots < 11 ? (
+            <span className="text-faint">
+              {" · "}
+              {t("est.rated", { n: round.ratedSlots })}
+            </span>
+          ) : null}
         </span>
       </span>
 
