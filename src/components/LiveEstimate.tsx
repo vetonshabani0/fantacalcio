@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import type { BoardPlayer, LiveBoard } from "@/lib/api-types";
 import type { EstimatedTeam, LiveEstimate } from "@/lib/fanta/public-live";
 import { Crest } from "./Crest";
 import { useT } from "./LocaleProvider";
+import { PlayerSheet } from "./PlayerSheet";
 import { TeamBadge } from "./TeamBadge";
 import {
   formatPoints,
@@ -19,15 +21,23 @@ import {
  * Kept collapsed by default: the score is the point, and a league of ten teams
  * would otherwise open as two hundred player rows.
  */
-function Lineup({ team }: { team: EstimatedTeam }) {
+function Lineup({
+  team,
+  onSelect,
+}: {
+  team: EstimatedTeam;
+  onSelect: (playerId: number) => void;
+}) {
   const t = useT();
 
   return (
     <div className="grid grid-cols-1 gap-x-8 pb-2 sm:grid-cols-2">
       {team.players.map((p) => (
-        <div
+        <button
           key={p.id}
-          className="flex items-center gap-2.5 border-b border-[var(--line-soft)] py-2"
+          type="button"
+          onClick={() => onSelect(p.id)}
+          className="tap flex w-full items-center gap-2.5 border-b border-[var(--line-soft)] py-2 text-left"
         >
           <Role role={p.role} />
           <Crest teamId={p.clubId} teamName={p.club} size="sm" eager />
@@ -56,13 +66,21 @@ function Lineup({ team }: { team: EstimatedTeam }) {
                 ? formatPoints(p.fantavoto)
                 : "—"}
           </span>
-        </div>
+        </button>
       ))}
     </div>
   );
 }
 
-function TeamRow({ team, index }: { team: EstimatedTeam; index: number }) {
+function TeamRow({
+  team,
+  index,
+  onSelect,
+}: {
+  team: EstimatedTeam;
+  index: number;
+  onSelect: (playerId: number) => void;
+}) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
@@ -122,7 +140,7 @@ function TeamRow({ team, index }: { team: EstimatedTeam; index: number }) {
         style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
       >
         <div className="min-h-0 overflow-hidden">
-          {open ? <Lineup team={team} /> : null}
+          {open ? <Lineup team={team} onSelect={onSelect} /> : null}
         </div>
       </div>
     </div>
@@ -138,6 +156,29 @@ function TeamRow({ team, index }: { team: EstimatedTeam; index: number }) {
  */
 export function LiveEstimateBoard({ estimate }: { estimate: LiveEstimate }) {
   const t = useT();
+  const [selected, setSelected] = useState<BoardPlayer | null>(null);
+  // The full board is a large payload and only a tap needs it, so it is fetched
+  // once on the first one and kept, rather than polled alongside the estimate.
+  const board = useRef<Record<number, BoardPlayer> | null>(null);
+
+  const openPlayer = useCallback(
+    async (playerId: number) => {
+      if (!board.current) {
+        // Explicitly the round being estimated: a league can sit a matchweek
+        // behind Serie A, and the default board would then explain the wrong one.
+        const data = (await fetch(
+          `/api/live?matchweek=${estimate.serieAMatchweek}`,
+        )
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)) as LiveBoard | null;
+        if (!data?.players) return;
+        board.current = Object.fromEntries(data.players.map((p) => [p.id, p]));
+      }
+      const player = board.current[playerId];
+      if (player) setSelected(player);
+    },
+    [estimate.serieAMatchweek],
+  );
 
   return (
     <section className="pt-12">
@@ -169,7 +210,12 @@ export function LiveEstimateBoard({ estimate }: { estimate: LiveEstimate }) {
         </div>
 
         {estimate.teams.map((team, i) => (
-          <TeamRow key={team.teamId} team={team} index={i} />
+          <TeamRow
+            key={team.teamId}
+            team={team}
+            index={i}
+            onSelect={openPlayer}
+          />
         ))}
 
         {estimate.missing.length ? (
@@ -182,6 +228,8 @@ export function LiveEstimateBoard({ estimate }: { estimate: LiveEstimate }) {
           {t("est.how")}
         </p>
       </div>
+
+      <PlayerSheet player={selected} onClose={() => setSelected(null)} />
     </section>
   );
 }

@@ -1,15 +1,28 @@
 import { NextResponse } from "next/server";
-import { getCurrentSnapshot, isLiveNow, resolvePointer } from "@/lib/fanta/source";
-import { scorePlayer } from "@/lib/fanta/scoring";
+import { toBoardPlayer } from "@/lib/api-types";
+import {
+  getCurrentSnapshot,
+  getSnapshot,
+  isLiveNow,
+  resolvePointer,
+} from "@/lib/fanta/source";
 
 export const dynamic = "force-dynamic";
 
-/** The full live board: fixtures plus every rated player, already scored. */
-export async function GET() {
-  const [pointer, snapshot] = await Promise.all([
-    resolvePointer(),
-    getCurrentSnapshot(),
-  ]);
+/**
+ * The full live board: fixtures plus every rated player, already scored.
+ *
+ * Defaults to the matchweek being played. `?matchweek=` asks for a specific one,
+ * which callers use when they are explaining figures from a round that is not
+ * the current one — a league whose own matchweek lags Serie A's, say.
+ */
+export async function GET(request: Request) {
+  const wanted = Number(new URL(request.url).searchParams.get("matchweek"));
+  const pointer = await resolvePointer();
+  const snapshot =
+    Number.isFinite(wanted) && wanted >= 1
+      ? await getSnapshot(pointer.seasonId, wanted)
+      : await getCurrentSnapshot();
 
   if (!snapshot) {
     return NextResponse.json(
@@ -18,26 +31,7 @@ export async function GET() {
     );
   }
 
-  const players = snapshot.players.map((player) => {
-    const scored = scorePlayer(player);
-    return {
-      id: player.id,
-      name: player.name,
-      role: player.role,
-      teamId: player.teamId,
-      teamName: player.teamName,
-      grade: scored.grade,
-      bonus: scored.bonus,
-      fantavoto: scored.fantavoto,
-      hasVote: scored.hasVote,
-      breakdown: scored.breakdown,
-      events: player.events,
-      onField: player.onField,
-      startProbability: player.startProbability,
-      replacedPlayerId: player.replacedPlayerId,
-      matchState: player.matchState,
-    };
-  });
+  const players = snapshot.players.map((p) => toBoardPlayer(p));
 
   return NextResponse.json({
     pointer,

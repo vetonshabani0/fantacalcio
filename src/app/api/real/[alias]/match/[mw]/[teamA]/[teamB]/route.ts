@@ -6,7 +6,10 @@ import {
   getLeagueTeamsFull,
   getMatchDetail,
   getOfficialCalendar,
+  type MatchDetail,
 } from "@/lib/fanta/official";
+import { toBoardPlayer, type BoardPlayer } from "@/lib/api-types";
+import { getSnapshot, resolvePointer } from "@/lib/fanta/source";
 
 export const dynamic = "force-dynamic";
 
@@ -88,9 +91,33 @@ export async function GET(
     return { name: t?.name ?? `#${id}`, logo: t?.logo ?? null };
   };
 
+  // The lineup endpoint gives each slot a rating and the score that counted,
+  // but never says how it was arrived at. The public feed does, so every player
+  // in either eleven is looked up there and shipped alongside — that is what
+  // lets a tapped player explain his fantavoto rather than just assert it.
+  const breakdowns = await liveBreakdowns(detail).catch(() => ({}));
+
   return NextResponse.json({
     ...detail,
     home: { ...detail.home, ...named(detail.home.teamId) },
     away: { ...detail.away, ...named(detail.away.teamId) },
+    breakdowns,
   });
+}
+
+async function liveBreakdowns(
+  detail: MatchDetail,
+): Promise<Record<number, BoardPlayer>> {
+  const pointer = await resolvePointer();
+  const snapshot = await getSnapshot(pointer.seasonId, detail.serieAMatchweek);
+  if (!snapshot) return {};
+
+  const out: Record<number, BoardPlayer> = {};
+  for (const side of [detail.home, detail.away]) {
+    for (const slot of [...side.starters, ...side.bench]) {
+      const player = snapshot.byId[slot.playerId];
+      if (player) out[slot.playerId] = toBoardPlayer(player);
+    }
+  }
+  return out;
 }

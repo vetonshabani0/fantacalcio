@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { LineupSlot, MatchSide } from "@/lib/fanta/official";
 import { Jersey } from "./Jersey";
 import { useT } from "./LocaleProvider";
@@ -44,7 +45,31 @@ function rowsFor(side: Side): LineupSlot[][] {
   return rows.filter((r) => r.length);
 }
 
-export function LineupPitch({ side }: { side: Side }) {
+/** A bench line, tappable when there is a breakdown behind it. */
+function BenchRow({
+  onSelect,
+  children,
+}: {
+  onSelect?: () => void;
+  children: ReactNode;
+}) {
+  const shared = "flex w-full items-center gap-2.5 py-1 text-left text-[12px]";
+  if (!onSelect) return <div className={shared}>{children}</div>;
+  return (
+    <button type="button" onClick={onSelect} className={`tap ${shared}`}>
+      {children}
+    </button>
+  );
+}
+
+export function LineupPitch({
+  side,
+  onSelect,
+}: {
+  side: Side;
+  /** Opens a player's breakdown; omitted where none is available. */
+  onSelect?: (slot: LineupSlot) => void;
+}) {
   const t = useT();
   const rows = rowsFor(side);
   let index = 0;
@@ -78,7 +103,12 @@ export function LineupPitch({ side }: { side: Side }) {
           {rows.map((row, i) => (
             <div key={i} className="flex items-start justify-center gap-1 sm:gap-1.5 md:gap-2">
               {row.map((slot) => (
-                <PlayerCard key={slot.playerId} slot={slot} index={index++} />
+                <PlayerCard
+                  key={slot.playerId}
+                  slot={slot}
+                  index={index++}
+                  onSelect={onSelect ? () => onSelect(slot) : undefined}
+                />
               ))}
             </div>
           ))}
@@ -104,9 +134,9 @@ export function LineupPitch({ side }: { side: Side }) {
         <div className="border-t border-[var(--line)] px-3 py-2.5">
           <p className="label pb-1.5">{t("pitch.bench")}</p>
           {cameOn.map((slot) => (
-            <div
+            <BenchRow
               key={slot.playerId}
-              className="flex items-center gap-2.5 py-1 text-[12px]"
+              onSelect={onSelect ? () => onSelect(slot) : undefined}
             >
               {/* Same shirt the pitch uses, so a substitute is read the same
                   way as the player he came on for. */}
@@ -131,7 +161,7 @@ export function LineupPitch({ side }: { side: Side }) {
               <span className="num shrink-0 font-bold">
                 {slot.score != null ? formatPoints(slot.score) : "–"}
               </span>
-            </div>
+            </BenchRow>
           ))}
         </div>
       ) : null}

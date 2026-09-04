@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLiveVersion } from "@/hooks/useLive";
-import type { MatchDetail, MatchSide } from "@/lib/fanta/official";
+import type { BoardPlayer } from "@/lib/api-types";
+import type { LineupSlot, MatchDetail, MatchSide } from "@/lib/fanta/official";
 import { LineupPitch } from "./LineupPitch";
+import { PlayerSheet } from "./PlayerSheet";
 import { useT } from "./LocaleProvider";
 import { formatPoints, Loading, Reveal, Section } from "./ui";
 
@@ -12,6 +14,8 @@ type Named = MatchSide & { name: string; logo: string | null };
 type Payload = Omit<MatchDetail, "home" | "away"> & {
   home: Named;
   away: Named;
+  /** Per-player bonus/malus detail, keyed by player id. */
+  breakdowns?: Record<number, BoardPlayer>;
   error?: string;
 };
 
@@ -32,6 +36,7 @@ export function MatchView({
   const [state, setState] = useState<"loading" | "ok" | "denied" | "missing">(
     "loading",
   );
+  const [selected, setSelected] = useState<BoardPlayer | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +54,12 @@ export function MatchView({
       cancelled = true;
     };
   }, [alias, matchweek, teamA, teamB, tick?.version]);
+
+  /** A slot only opens if the feed had something to say about that player. */
+  const open = (slot: LineupSlot) => {
+    const player = data?.breakdowns?.[slot.playerId];
+    if (player) setSelected(player);
+  };
 
   const back = (
     <Link
@@ -138,10 +149,12 @@ export function MatchView({
         <Section title={t("pitch.lineups")} hint={t("pitch.starting")} />
         {/* Two-up at every width: the point of this screen is comparison. */}
         <div className="gutter mt-5 grid grid-cols-2 gap-2 sm:gap-4 md:gap-5">
-          <LineupPitch side={data.home} />
-          <LineupPitch side={data.away} />
+          <LineupPitch side={data.home} onSelect={open} />
+          <LineupPitch side={data.away} onSelect={open} />
         </div>
       </section>
+
+      <PlayerSheet player={selected} onClose={() => setSelected(null)} />
     </>
   );
 }

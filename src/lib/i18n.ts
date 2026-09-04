@@ -332,7 +332,7 @@ const it = {
 
   // ------------------------------------------------------------- stima live
   "est.title": "Punteggi in tempo reale",
-  "est.hint": "Stimati dalle rose pubbliche e dai voti di Serie A",
+  "est.hint": "Stimati dalle rose pubbliche e dai voti di Serie A · tocca un giocatore per il dettaglio",
   "est.badge": "Stima",
   "est.live": "In gioco",
   "est.complete": "Giornata finita, in attesa del calcolo della lega",
@@ -399,7 +399,7 @@ const it = {
   "squad.player2": "Giocatore",
   "squad.notInLeague": "Questa lega non è nel tuo account, quindi la rosa non è visibile.",
   "pitch.lineups": "Formazioni",
-  "pitch.starting": "Titolari",
+  "pitch.starting": "Titolari · tocca un giocatore per bonus e malus",
   "pitch.bench": "Panchina",
   "pitch.subOn": "Entrato per {name}",
   "pitch.subOff": "Uscito per {name}",
@@ -710,7 +710,7 @@ const en: Record<TranslationKey, string> = {
 
   // ------------------------------------------------------------- live estimate
   "est.title": "Live scores",
-  "est.hint": "Estimated from the public squads and the Serie A ratings",
+  "est.hint": "Estimated from the public squads and the Serie A ratings · tap a player for the breakdown",
   "est.badge": "Estimate",
   "est.live": "In play",
   "est.complete": "Matchweek over, waiting for the league to calculate it",
@@ -775,7 +775,7 @@ const en: Record<TranslationKey, string> = {
   "squad.player2": "Player",
   "squad.notInLeague": "This league is not in your account, so the squad is not visible.",
   "pitch.lineups": "Lineups",
-  "pitch.starting": "Starting XI",
+  "pitch.starting": "Starting XI · tap a player for bonuses and maluses",
   "pitch.bench": "Bench",
   "pitch.subOn": "On for {name}",
   "pitch.subOff": "Off for {name}",

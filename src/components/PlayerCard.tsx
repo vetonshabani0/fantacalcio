@@ -15,9 +15,12 @@ import { formatPoints } from "./ui";
 export function PlayerCard({
   slot,
   index,
+  onSelect,
 }: {
   slot: LineupSlot;
   index: number;
+  /** Opens the breakdown. Omitted when there is nothing to explain. */
+  onSelect?: () => void;
 }) {
   const t = useT();
   const value = slot.score;
@@ -33,9 +36,15 @@ export function PlayerCard({
         ? "bg-flare/85 text-ground"
         : "bg-paper text-ground";
 
+  const Tag = onSelect ? "button" : "div";
+
   return (
-    <div
-      className="pop flex min-w-0 flex-1 basis-0 flex-col items-center"
+    <Tag
+      type={onSelect ? "button" : undefined}
+      onClick={onSelect}
+      className={`pop flex min-w-0 flex-1 basis-0 flex-col items-center ${
+        onSelect ? "tap cursor-pointer" : ""
+      }`}
       style={{ animationDelay: `${0.03 * index}s`, maxWidth: 78 }}
       title={
         slot.swappedWith
@@ -73,6 +82,6 @@ export function PlayerCard({
           {value != null ? formatPoints(value) : "–"}
         </div>
       </div>
-    </div>
+    </Tag>
   );
 }
