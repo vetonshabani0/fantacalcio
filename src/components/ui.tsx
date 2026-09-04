@@ -231,28 +231,64 @@ export function Segmented<T extends string>({
 /* ------------------------------------------------------------ bottom sheet */
 
 /**
- * Drag-to-dismiss sheet on phones, centred dialog on desktop. Scroll on the
- * page behind it is locked while it is open.
+ * True once the viewport is wide enough for a docked panel.
+ *
+ * Deliberately wider than the `md` breakpoint: a panel beside the lineups needs
+ * about 400px of its own, and taking that from a 768px tablet leaves the two
+ * elevens too cramped to be worth keeping in view.
+ *
+ * Starts false so the server-rendered markup and the first client render agree,
+ * then corrects immediately — the same trade the locale makes.
+ */
+function useWideViewport(): boolean {
+  const [wide, setWide] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const sync = () => setWide(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  return wide;
+}
+
+/**
+ * A panel over the page.
+ *
+ * `variant: "side"` docks it to the right on a wide screen and leaves the page
+ * alone — no dimming, no click-catcher, no scroll lock — because the content
+ * behind it is the point: you read a player's breakdown while still looking at
+ * the lineup he came from, and tapping the next player just swaps the panel.
+ * On a phone there is no room to sit beside anything, so both variants are the
+ * same drag-to-dismiss bottom sheet.
  */
 export function Sheet({
   open,
   onClose,
   title,
   children,
+  variant = "center",
 }: {
   open: boolean;
   onClose: () => void;
   title?: ReactNode;
   children: ReactNode;
+  variant?: "center" | "side";
 }) {
+  const wide = useWideViewport();
+  const docked = variant === "side" && wide;
+
   useEffect(() => {
-    if (!open) return;
+    // A docked panel must not freeze the page it sits next to.
+    if (!open || docked) return;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = previous;
     };
-  }, [open]);
+  }, [open, docked]);
 
   useEffect(() => {
     if (!open) return;
@@ -265,32 +301,40 @@ export function Sheet({
     <AnimatePresence>
       {open ? (
         <>
+          {docked ? null : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={onClose}
+              className="fixed inset-0 z-50 bg-ground/70 backdrop-blur-sm"
+            />
+          )}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={onClose}
-            className="fixed inset-0 z-50 bg-ground/70 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={docked ? { x: "100%" } : { y: "100%" }}
+            animate={docked ? { x: 0 } : { y: 0 }}
+            exit={docked ? { x: "100%" } : { y: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 36 }}
-            drag="y"
+            drag={docked ? false : "y"}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={(_, info) => {
               if (info.offset.y > 110 || info.velocity.y > 700) onClose();
             }}
-            className="fixed inset-x-0 bottom-0 z-50 max-h-[88dvh] overflow-hidden rounded-t-3xl border-t border-[var(--line)] bg-ground-2 md:inset-x-auto md:left-1/2 md:bottom-auto md:top-1/2 md:w-[min(680px,92vw)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border"
+            className={
+              docked
+                ? "fixed bottom-0 right-0 top-0 z-50 flex w-[min(420px,40vw)] flex-col overflow-hidden border-l border-[var(--line)] bg-ground-2 shadow-[-18px_0_50px_-24px_rgba(0,0,0,0.45)]"
+                : "fixed inset-x-0 bottom-0 z-50 max-h-[88dvh] overflow-hidden rounded-t-3xl border-t border-[var(--line)] bg-ground-2 md:inset-x-auto md:left-1/2 md:bottom-auto md:top-1/2 md:w-[min(680px,92vw)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-3xl md:border"
+            }
           >
-            <div className="flex justify-center pt-2.5 md:hidden">
-              <span className="h-1 w-9 rounded-full bg-fill-strong" />
-            </div>
+            {docked ? null : (
+              <div className="flex justify-center pt-2.5 md:hidden">
+                <span className="h-1 w-9 rounded-full bg-fill-strong" />
+              </div>
+            )}
             {title ? (
-              <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-3">
+              <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-3 pt-3">
                 {title}
                 <button
                   onClick={onClose}
@@ -301,7 +345,13 @@ export function Sheet({
                 </button>
               </div>
             ) : null}
-            <div className="max-h-[calc(88dvh-72px)] overflow-y-auto overscroll-contain pb-[calc(20px+env(safe-area-inset-bottom))]">
+            <div
+              className={
+                docked
+                  ? "min-h-0 flex-1 overflow-y-auto overscroll-contain pb-6"
+                  : "max-h-[calc(88dvh-72px)] overflow-y-auto overscroll-contain pb-[calc(20px+env(safe-area-inset-bottom))]"
+              }
+            >
               {children}
             </div>
           </motion.div>

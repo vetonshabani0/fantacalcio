@@ -4,6 +4,7 @@ import { minuteLabel } from "@/lib/fanta/format";
 import type { EventKind } from "@/lib/fanta/types";
 import type { BoardPlayer } from "@/lib/api-types";
 import { Crest } from "./Crest";
+import { Jersey } from "./Jersey";
 import { useT } from "./LocaleProvider";
 import { formatPoints, Role, Sheet } from "./ui";
 
@@ -20,23 +21,32 @@ export function PlayerSheet({
     <Sheet
       open={!!player}
       onClose={onClose}
+      variant="side"
       title={
         player ? (
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <Role role={player.role} />
-              <h3 className="display-tight truncate text-[22px]">
-                {player.name}
-              </h3>
+          <div className="flex min-w-0 items-center gap-3">
+            {/* The same shirt he is wearing on the pitch behind this panel. */}
+            <Jersey
+              teamId={player.teamId}
+              goalkeeper={player.role === "P"}
+              className="h-11 w-11 shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <Role role={player.role} />
+                <h3 className="display-tight truncate text-[22px]">
+                  {player.name}
+                </h3>
+              </div>
+              <p className="label mt-1 flex items-center gap-1.5">
+                <Crest
+                  teamId={player.teamId}
+                  teamName={player.teamName}
+                  size="sm"
+                />
+                {player.teamName}
+              </p>
             </div>
-            <p className="label mt-1 flex items-center gap-1.5">
-              <Crest
-                teamId={player.teamId}
-                teamName={player.teamName}
-                size="sm"
-              />
-              {player.teamName}
-            </p>
           </div>
         ) : null
       }
